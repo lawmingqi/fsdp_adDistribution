@@ -20,6 +20,8 @@ const s3Client = new S3Client({
   },
 });
 
+// The idea behind linking s3 and dynamoDB together is with a same ID (uuidv4) This would be the partition key and the id for dynamo and s3 bucket respectively
+
 app.use(cors({
   origin: 'http://localhost:3000', // use frontend url
   methods: ['GET', 'POST', 'DELETE'],
@@ -33,7 +35,7 @@ app.post('/api/generate-presigned-url', async (req, res) => {
   const { FileName, FileType } = req.body;
   const FileId = uuidv4(); // Generate a unique identifier (FileId)
   console.log("FileId", FileId);
-  // Put the FileID into s3 and generate a presigned Url 
+  // Put the FileID into s3 and generate a presigned Url (allows anyone to access the aws s3 bucket for a limited time)
   const command = new PutObjectCommand({
     Bucket: process.env.REACT_APP_S3_BUCKET_NAME,
     Key: FileId,
