@@ -2,7 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const { dynamoDb } = require('./awsConfig');
 const dotenv = require('dotenv');
-const { S3Client, PutObjectCommand, DeleteObjectCommand } = require('@aws-sdk/client-s3');
+const { S3Client, PutObjectCommand, DeleteObjectCommand, GetObjectCommand} = require('@aws-sdk/client-s3');
 const { ScanCommand, PutCommand, DeleteCommand } = require('@aws-sdk/lib-dynamodb');
 const { v4: uuidv4 } = require('uuid');
 const { getSignedUrl } = require('@aws-sdk/s3-request-presigner');
@@ -29,38 +29,19 @@ app.use(cors({
 app.use(express.json({ limit: '10mb' }));
 
 // helper function to generate pre-signed URL
-const generatePresignedUrl = async (bucketName, key, contentType, expiresIn = 300) => {
-  const params = {
-    Bucket: bucketName,
-    Key: key,
-    ContentType: contentType,
-  };
-  const command = new PutObjectCommand(params);
-  return await getSignedUrl(s3Client, command, { expiresIn });
-};
-
-// get files from DynamoDB
-app.get('/api/files', async (req, res) => {
-  try {
-    const params = {
-      TableName: process.env.DYNAMODB_TABLE_FILES,
-    };
-    const data = await dynamoDb.send(new ScanCommand(params));
-    res.setHeader('Content-Type', 'application/json'); // Ensure JSON header
-    res.json(data.Items);
-  } catch (error) {
-    console.error("Error fetching files:", error);
-    res.status(500).json({ message: 'Internal server error' });
-  }
-});
-
-// generate pre-signed URL for uploading files to S3
 app.post('/api/generate-presigned-url', async (req, res) => {
   const { FileName, FileType } = req.body;
   const FileId = uuidv4(); // Generate a unique identifier (FileId)
-
+  console.log("FileId", FileId);
+  // Put the FileID into s3 and generate a presigned Url 
+  const command = new PutObjectCommand({
+    Bucket: process.env.REACT_APP_S3_BUCKET_NAME,
+    Key: FileId,
+    ContentType: FileType,
+  });
   try {
-    const url = await generatePresignedUrl(process.env.S3_BUCKET_NAME, FileId, FileType, 300);
+    const url = await getSignedUrl(s3Client, command , {expiresIn: 3600});
+    console.log("url", url);
     res.setHeader('Content-Type', 'application/json');
     res.json({ url, key: FileId, FileId }); // Return FileId to be used as S3 key and in DynamoDB
   } catch (error) {
@@ -69,9 +50,38 @@ app.post('/api/generate-presigned-url', async (req, res) => {
   }
 });
 
-// upload file metadata to DynamoDB
+// get files from DynamoDB and generate presigned URL's for each data 
+app.get('/api/files', async (req, res) => {
+  try {
+    const params = {
+      TableName: process.env.DYNAMODB_TABLE_FILES,
+    };
+    const data = await dynamoDb.send(new ScanCommand(params));
+    // Generating a signed url for each of the files stored in dynamoDB
+    for (const item of data.Items){
+      // create a get
+      const getObjectParams = {
+        Bucket: process.env.REACT_APP_S3_BUCKET_NAME,
+        Key: item.FileId,
+      };
+      const command = new GetObjectCommand(getObjectParams);
+      const url = await getSignedUrl(s3Client,command,{expiresIn: 3600});
+      // Dynamically generate the signed url and assign to the File.url property
+      item.FileUrl = url;
+    }
+    console.log("Metadata",data.$metadata);
+    res.setHeader('Content-Type', 'application/json'); // Ensure JSON header
+    res.json(data.Items);
+  } catch (error) {
+    console.error("Error fetching files:", error);
+    res.status(500).json({ message: 'Internal server error'});
+  }
+});
+
+
+// upload file metadata to DynamoDB As well as presigned url 
 app.post('/api/upload-file', async (req, res) => {
-  const { FileId, FileName, FileSize, FileType, FileUrl } = req.body;
+  const { FileId, FileName, FileSize, FileType, FileUrl} = req.body;
 
   try {
     const params = {
@@ -85,6 +95,8 @@ app.post('/api/upload-file', async (req, res) => {
         UploadDate: new Date().toISOString(),
       },
     };
+
+    console.log(params);
 
     const command = new PutCommand(params);
     await dynamoDb.send(command);
@@ -100,10 +112,9 @@ app.post('/api/upload-file', async (req, res) => {
 // delete file from S3 and DynamoDB
 app.delete('/api/delete-file/:fileKey', async (req, res) => {
   const { fileKey } = req.params;
-
   try {
     const deleteParams = {
-      Bucket: process.env.S3_BUCKET_NAME,
+      Bucket: process.env.REACT_APP_S3_BUCKET_NAME,
       Key: fileKey, 
     };
 

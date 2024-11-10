@@ -2,7 +2,9 @@ import React, { useState, useEffect } from 'react';
 import '../styles/Advert.css';
 
 const FileUpload = () => {
+  // file is the file object that is passed in then setFile the function used to update the state of the file object 
   const [file, setFile] = useState(null);
+  // Pass the data retrieved into an array
   const [fileList, setFileList] = useState([]);
   const [previewUrl, setPreviewUrl] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -23,6 +25,7 @@ const FileUpload = () => {
 
   const handleFileChange = (event) => {
     const selectedFile = event.target.files[0];
+    // Shows the live preview of the file when it changes
     setFile(selectedFile);
     if (selectedFile) {
       setPreviewUrl(URL.createObjectURL(selectedFile));
@@ -44,7 +47,13 @@ const FileUpload = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ FileName: file.name, FileType: file.type }),
       });
+
       const { url, key } = await response.json();
+
+      console.log("Generated URL:", url);
+      console.log("DynamoDB key for s3 object: ",key)
+
+      // Need to store this key in s3 as well
 
       await fetch(url, {
         method: 'PUT',
@@ -74,6 +83,7 @@ const FileUpload = () => {
   };
 
   const deleteFile = async (fileKey) => {
+    console.log("Deleting file with key:", fileKey);
     try {
       await fetch(`/api/delete-file/${fileKey}`, { method: 'DELETE' });
       fetchFiles();
@@ -101,11 +111,11 @@ const FileUpload = () => {
         {fileList.map((file) => (
           <div key={file.FileId} className="file-item">
             <a
-              href={`https://${process.env.REACT_APP_S3_BUCKET_NAME}.s3.amazonaws.com/${file.FileUrl}`}
+              href={file.FileUrl}
               target="_blank"
               rel="noopener noreferrer"
             >
-              <img src={`https://${process.env.REACT_APP_S3_BUCKET_NAME}.s3.amazonaws.com/${file.FileUrl}`} alt={file.FileName} />
+              <img src={file.FileUrl} alt={file.FileName} />
             </a>
             <p>{file.FileName}</p>
             <button onClick={() => deleteFile(file.FileId)}>Delete</button>
