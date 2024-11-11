@@ -1,7 +1,9 @@
 const express = require('express');
 const cors = require('cors');
 const { dynamoDb } = require('./awsConfig');
+const websSocketClient = require('../server/WebsocketClient')
 const ws = require("ws");
+const http = require('http');
 const dotenv = require('dotenv');
 const { S3Client, PutObjectCommand, DeleteObjectCommand, GetObjectCommand} = require('@aws-sdk/client-s3');
 const { ScanCommand, PutCommand, DeleteCommand } = require('@aws-sdk/lib-dynamodb');
@@ -11,7 +13,7 @@ const { getSignedUrl } = require('@aws-sdk/s3-request-presigner');
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 6000;
 
 const s3Client = new S3Client({
   region: process.env.AWS_REGION,
@@ -167,6 +169,20 @@ app.delete('/api/delete-file/:fileKey', async (req, res) => {
     res.status(500).json({ message: 'Internal server error' });
   }
 });
+
+
+// Initialize the  http server 
+
+const server = http.createServer((req,res) => {
+    res.writeHead(200, {'Content-Type':'application/json'})
+    res.end('WebSocket is running ');
+})
+
+server.listen(process.env.PORT || 8000, () => {
+  console.log('Web socket server running on port 8000')
+})
+
+websSocketClient.setupWebSocketServer(server)
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
