@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const { dynamoDb } = require('./awsConfig');
+const ws = require("ws");
 const dotenv = require('dotenv');
 const { S3Client, PutObjectCommand, DeleteObjectCommand, GetObjectCommand} = require('@aws-sdk/client-s3');
 const { ScanCommand, PutCommand, DeleteCommand } = require('@aws-sdk/lib-dynamodb');
@@ -79,6 +80,33 @@ app.get('/api/files', async (req, res) => {
     res.status(500).json({ message: 'Internal server error'});
   }
 });
+
+// upload the advertisement to DynamoDB
+app.put('/create/advertisements', async (req,res) => {
+  // Destructure the properties of the request body
+  const {templateId,Status,templateType,TemplateUrl} = req.body;
+  try{
+    const params = {
+      TableName: AdTemplates,
+      Item: {
+        templateId,
+        CreatedDate : new Date.toISOString(),
+        Status,
+        templateType,
+        TemplateUrl,
+      }
+    }
+
+    const command = new PutObjectCommand(params);
+    await dynamoDb.send(command);
+    console.log(`The template with the templateID ${templateId} has been successfully added`);
+    res.status(200).send('Template uploaded sucessfully');
+  }
+  catch(error){
+    console.error(error);
+    res.status(500).send("Internal Server Error")
+  }
+})
 
 
 // upload file metadata to DynamoDB As well as presigned url 
