@@ -1,6 +1,9 @@
 const express = require('express');
 const cors = require('cors');
 const { dynamoDb } = require('./awsConfig');
+const websSocketClient = require('../server/WebsocketClient')
+const ws = require("ws");
+const http = require('http');
 const dotenv = require('dotenv');
 const { S3Client, PutObjectCommand, DeleteObjectCommand, GetObjectCommand} = require('@aws-sdk/client-s3');
 const { ScanCommand, PutCommand, DeleteCommand } = require('@aws-sdk/lib-dynamodb');
@@ -10,7 +13,7 @@ const { getSignedUrl } = require('@aws-sdk/s3-request-presigner');
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 6000;
 
 const s3Client = new S3Client({
   region: process.env.AWS_REGION,
@@ -80,6 +83,33 @@ app.get('/api/files', async (req, res) => {
   }
 });
 
+// upload the advertisement to DynamoDB
+app.put('/create/advertisements', async (req,res) => {
+  // Destructure the properties of the request body
+  const {templateId,Status,templateType,TemplateUrl} = req.body;
+  try{
+    const params = {
+      TableName: AdTemplates,
+      Item: {
+        templateId,
+        CreatedDate : new Date.toISOString(),
+        Status,
+        templateType,
+        TemplateUrl,
+      }
+    }
+
+    const command = new PutObjectCommand(params);
+    await dynamoDb.send(command);
+    console.log(`The template with the templateID ${templateId} has been successfully added`);
+    res.status(200).send('Template uploaded sucessfully');
+  }
+  catch(error){
+    console.error(error);
+    res.status(500).send("Internal Server Error")
+  }
+})
+
 
 // upload file metadata to DynamoDB As well as presigned url 
 app.post('/api/upload-file', async (req, res) => {
@@ -139,6 +169,20 @@ app.delete('/api/delete-file/:fileKey', async (req, res) => {
     res.status(500).json({ message: 'Internal server error' });
   }
 });
+
+
+// Initialize the  http server 
+
+const server = http.createServer((req,res) => {
+    res.writeHead(200, {'Content-Type':'application/json'})
+    res.end('WebSocket is running ');
+})
+
+server.listen(process.env.PORT || 8000, () => {
+  console.log('Web socket server running on port 8000')
+})
+
+websSocketClient.setupWebSocketServer(server)
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
