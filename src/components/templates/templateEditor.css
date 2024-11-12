@@ -78,6 +78,6 @@ canvas {
   margin-top: 20px;
 }
 
-h2{
-  margin-bottom: 3em;
+#bg-color{
+  z-index: 1000;
 }
