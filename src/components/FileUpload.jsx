@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import '../styles/Advert.css';
+import logo from '../assets/githubbies-logo.jpg'
+import { Link } from 'react-router-dom';
 
 const FileUpload = () => {
   // file is the file object that is passed in then setFile the function used to update the state of the file object 
@@ -94,6 +96,20 @@ const FileUpload = () => {
 
   return (
     <div className="file-upload-container">
+      <nav className="navbar">
+                <div className="navbar-logo">
+                    <img src={logo} alt="Logo" />
+                </div>
+                <ul className="navbar-links">
+                    <li><Link to="/">Dashboard</Link></li>
+                    <li><Link to="/file-management">File Management</Link></li>
+                    <li><Link to="/template-editor">Template Editor</Link></li>
+                    <li><Link to="/media-management">Media Management</Link></li>
+                </ul>
+            </nav>
+            <div className="top-bar">
+            <h2 className="editor-title">File Management</h2>
+          </div>
       <h2>Upload File</h2>
       <input type="file" onChange={handleFileChange} />
       {previewUrl && (

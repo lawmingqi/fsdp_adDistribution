@@ -1,7 +1,7 @@
 // App.jsx
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import TemplateEditor from './components/templates/templateEditor';
+import TemplateEditor from './components/templateEditor';
 import FileUpload from './components/FileUpload';
 import Home from './components/home';
 

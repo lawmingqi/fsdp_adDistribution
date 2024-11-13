@@ -1,13 +1,14 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Canvas, Rect, Circle, IText, FabricImage } from 'fabric';
-import { useNavigate } from 'react-router-dom';
-import './templateEditor.css';
+import { Link } from 'react-router-dom';
+import '../styles/templateEditor.css';
 import { FaImage, FaVideo, FaSquare, FaCircle, FaFont, FaSave } from 'react-icons/fa';
+import logo from '../assets/githubbies-logo.jpg'
+
 //import Settings from './toolsSettings';
 const TemplateEditor = () => {
   const canvasRef = useRef(null);
   const canvas = useRef(null);
-  const navigate = useNavigate();
   const [selectedObject, setSelectedObject] = useState(null); 
   const [showTools, setShowTools] = useState(false); 
   const [width, setWidth] = useState(""); 
@@ -207,7 +208,7 @@ const TemplateEditor = () => {
     }
   };
   
-  const handleSaveTemplateAsImage = () => {
+  /*const handleSaveTemplateAsImage = () => {
 
     const templateData = canvas.current.toJSON(['backgroundColor']);
     console.log('Template Data:', templateData);
@@ -253,10 +254,56 @@ const TemplateEditor = () => {
     setTimeout(() => {
       mediaRecorder.stop();
     },5000);
-  };
+  };*/
 
   // save template functionality
   const handleSaveTemplate = () => {
+    // Prepare the template metadata
+    const templateId = "template123"; // This can be dynamically generated
+    const objects = canvas.current.getObjects(); // Get all objects on canvas
+    const metadata = objects.map((obj, index) => {
+        // Extract the properties of each object
+        const properties = {
+            templateId: templateId,  // Link to the template
+            objectId: `object${index}`, // Unique ID for each object
+            type: obj.type,  // Type of the object (rect, circle, image, text)
+            left: obj.left,
+            top: obj.top,
+            width: obj.width,
+            height: obj.height,
+            fill: obj.fill || null, // Color or properties of the object
+            angle: obj.angle,
+            fontSize: obj.fontSize || null, // Text objects
+            fontFamily: obj.fontFamily || null, // Text objects
+            opacity: obj.opacity || 1,  // Optional, in case of images or videos
+        };
+        return properties;
+    });
+
+    // Save to DynamoDB (backend will handle this part)
+    saveTemplateMetadataToDynamoDB(metadata);
+};
+
+const saveTemplateMetadataToDynamoDB = async (metadata) => {
+  try {
+    const response = await fetch('/api/save-template-metadata', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ metadata }),
+    });
+    
+    const data = await response.json();
+    console.log('Server Response:', data);
+  } catch (error) {
+    console.error('Error saving template metadata:', error);
+  }
+};
+
+
+
+  /*const handleSaveTemplate = () => {
     //handleSaveTemplateAsJSON();
     const videoObjects = canvas.current.getObjects().filter(obj => obj.type === 'image' && obj.getElement().tagName ==='VIDEO');
 
@@ -265,7 +312,7 @@ const TemplateEditor = () => {
     } else{
       handleSaveTemplateAsImage();
     }
-  };
+  };*/
 
   // const handleSaveTemplateAsJSON = () => {
   //   const canvasJSON = canvas.current.toJSON();
@@ -280,10 +327,6 @@ const TemplateEditor = () => {
   //   link.click();
   // };
   
-  // back to Admin button
-  const handleBackToAdmin = () => {
-    navigate('/admin');
-  };
 
   // Handle background color change
 const handleBackgroundColorChange = (e) => {
@@ -351,109 +394,120 @@ const setCanvasBackgroundColor = (color) => {
   };
 
   return (
-    <div className="template-editor-container">
-      <div className="sidebar">
-        <label htmlFor="bg-color">Background Color:</label>
-        <input
-          type="color"
-          id="bg-color"
-          value={backgroundColor}
-          onChange={handleBackgroundColorChange}
-        />
-        <div className="sidebar-item" onClick={addRectangle}>
-          <FaSquare size={20} />
-        </div>
-        <div className="sidebar-item" onClick={addCircle}>
-          <FaCircle size={20} />
-        </div>
-        <div className="sidebar-item" onClick={addText}>
-          <FaFont size={20} />
-        </div>
-        <div className="sidebar-item">
-          <label htmlFor="image-upload">
-            <FaImage size={20} />
-          </label>
-          <input 
-            id="image-upload" 
-            type="file" 
-            onChange={handleImageUpload} 
-            accept="image/*" 
-            style={{ display: 'none' }}
+    <div className = "template-editor">
+      <nav className="navbar">
+                <div className="navbar-logo">
+                    <img src={logo} alt="Logo" />
+                </div>
+                <ul className="navbar-links">
+                    <li><Link to="/">Dashboard</Link></li>
+                    <li><Link to="/file-management">File Management</Link></li>
+                    <li><Link to="/template-editor">Template Editor</Link></li>
+                    <li><Link to="/media-management">Media Management</Link></li>
+                </ul>
+            </nav>
+            <div className="template-editor-container">
+        <div className="sidebar">
+          <input
+            type="color"
+            id="bg-color"
+            value={backgroundColor}
+            onChange={handleBackgroundColorChange}
           />
-        </div>
-        <div className="sidebar-item">
-          <label htmlFor="video-upload">
-            <FaVideo size={20} />
-          </label>
-          <input 
-            id="video-upload" 
-            type="file" 
-            onChange={handleVideoUpload} 
-            accept="video/*" 
-            style={{ display: 'none' }}
-          />
-        </div>
-        <div className="sidebar-item" onClick={handleSaveTemplate}>
-          <FaSave size={20} />
-        </div>
-      </div>
-
-      <div className="main-content">
-        <div className="top-bar">
-          <button className="back-btn" onClick={handleBackToAdmin}>Back to Admin</button>
-          <h2 className="editor-title">Template Editor</h2>
-        </div>
-
-        <canvas ref={canvasRef} style={{ border: '1px solid #000', marginLeft: 'auto', marginRight: 'auto', display: 'block' }}></canvas>
-
-        {/* Render tools only if an object is selected */}
-        {showTools && selectedObject && (
-          <div className="tools">
-            {/* If the selected object is text */}
-            {selectedObject.type === 'i-text' && (
-              <>
-                <select onChange={(e) => changeTextFont(e.target.value)}>
-                  <option value="Arial">Arial</option>
-                  <option value="Courier">Courier</option>
-                  <option value="Times New Roman">Times New Roman</option>
-                </select>
-                <input
-                  type="color"
-                  onChange={(e) => changeTextColor(e.target.value)}
-                  title="Text Color"
-                />
-                <input
-                  type="number"
-                  value={selectedObject.fontSize}
-                  placeholder="Font Size"
-                  onChange={(e) => changeTextSize(Number(e.target.value))}
-                />
-              </>
-            )}
-
-            {selectedObject.type !== 'i-text' && (
-              <>
-                <input
-                  type="number"
-                  value={width}
-                  placeholder="Width"
-                  onChange={(e) => changeWidth(Number(e.target.value))}
-                />
-                <input
-                  type="number"
-                  value={height}
-                  placeholder="Height"
-                  onChange={(e) => changeHeight(Number(e.target.value))}
-                />
-                <input
-                  type="color"
-                  onChange={(e) => changeShapeColor(e.target.value)}
-                  title="Shape Color"
-                />
-              </>
-            )}
+          <div className="sidebar-item" onClick={addRectangle}>
+            <FaSquare size={20} />
           </div>
-        )}
+          <div className="sidebar-item" onClick={addCircle}>
+            <FaCircle size={20} />
+          </div>
+          <div className="sidebar-item" onClick={addText}>
+            <FaFont size={20} />
+          </div>
+          <div className="sidebar-item">
+            <label htmlFor="image-upload">
+              <FaImage size={20} />
+            </label>
+            <input 
+              id="image-upload" 
+              type="file" 
+              onChange={handleImageUpload} 
+              accept="image/*" 
+              style={{ display: 'none' }}
+            />
+          </div>
+          <div className="sidebar-item">
+            <label htmlFor="video-upload">
+              <FaVideo size={20} />
+            </label>
+            <input 
+              id="video-upload" 
+              type="file" 
+              onChange={handleVideoUpload} 
+              accept="video/*" 
+              style={{ display: 'none' }}
+            />
+          </div>
+          <div className="sidebar-item" onClick={handleSaveTemplate}>
+            <FaSave size={20} />
+          </div>
+        </div>
+
+        <div className="main-content">
+          <div className="top-bar">
+            <h2 className="editor-title">Template Editor</h2>
+          </div>
+
+          <canvas ref={canvasRef} style={{ border: '1px solid #000', marginLeft: 'auto', marginRight: 'auto', display: 'block' }}></canvas>
+
+          {/* Render tools only if an object is selected */}
+          {showTools && selectedObject && (
+            <div className="tools">
+              {/* If the selected object is text */}
+              {selectedObject.type === 'i-text' && (
+                <>
+                  <select onChange={(e) => changeTextFont(e.target.value)}>
+                    <option value="Arial">Arial</option>
+                    <option value="Courier">Courier</option>
+                    <option value="Times New Roman">Times New Roman</option>
+                  </select>
+                  <input
+                    type="color"
+                    onChange={(e) => changeTextColor(e.target.value)}
+                    title="Text Color"
+                  />
+                  <input
+                    type="number"
+                    value={selectedObject.fontSize}
+                    placeholder="Font Size"
+                    onChange={(e) => changeTextSize(Number(e.target.value))}
+                  />
+                </>
+              )}
+
+              {selectedObject.type !== 'i-text' && (
+                <>
+                  <input
+                    type="number"
+                    value={width}
+                    placeholder="Width"
+                    onChange={(e) => changeWidth(Number(e.target.value))}
+                  />
+                  <input
+                    type="number"
+                    value={height}
+                    placeholder="Height"
+                    onChange={(e) => changeHeight(Number(e.target.value))}
+                  />
+                  <input
+                    type="color"
+                    onChange={(e) => changeShapeColor(e.target.value)}
+                    title="Shape Color"
+                  />
+                </>
+              )}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
