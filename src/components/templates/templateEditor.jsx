@@ -3,6 +3,7 @@ import { Canvas, Rect, Circle, IText, FabricImage } from 'fabric';
 import { useNavigate } from 'react-router-dom';
 import './templateEditor.css';
 import { FaImage, FaVideo, FaSquare, FaCircle, FaFont, FaSave } from 'react-icons/fa';
+
 //import Settings from './toolsSettings';
 const TemplateEditor = () => {
   const canvasRef = useRef(null);
@@ -146,10 +147,8 @@ const TemplateEditor = () => {
           }
 
           const fabricVideo = new FabricImage(video, {
-            left: (canvasWidth - videoWidth) / 2,  
-            top: (canvasHeight - videoHeight) / 2, 
-            width: videoWidth,
-            height: videoHeight,
+            left:0,  
+            top:0, 
             objectCaching: false,  
             hasControls: true,    
             selectable: true,    

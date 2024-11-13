@@ -5,44 +5,6 @@
   color: #333;
 }
 
-.navbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  color: #333;
-}
-.navbar-logo{
-  border-radius: none;
-}
-
-.navbar-logo img {
-  height: 100px;
-}
-
-.navbar-links {
-  list-style: none;
-  display: flex;
-  gap: 15px;
-  margin: 0;
-}
-
-.navbar-links li {
-  display: inline;
-}
-
-.navbar-links a {
-  color: #333;
-  text-decoration: none;
-  padding: 8px 12px;
-  border-radius: 4px;
-  transition: background-color 0.3s ease;
-}
-
-.navbar-links a:hover {
-  background-color: #555;
-  color: white;
-}
-
 .dashboard-content {
   padding: 20px;
   text-align: center;
