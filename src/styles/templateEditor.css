@@ -6,14 +6,14 @@
 
 .sidebar {
   width: 45px;
-  height: 60%;
+  height: 70%;
   background-color: #a3a3a3;
   display: flex;
   flex-direction: column;
   align-items: center;
-  position: fixed;
-  top: 50%; 
-  left: 20px;
+  position: relative;
+  top: 45%; 
+  left: 100px;
   transform: translateY(-50%);
   z-index: 1;
   border-radius: 10px;
@@ -67,6 +67,7 @@
 .editor-title {
   font-size: 34px;
   font-weight: bold;
+  margin-bottom: 3em;
 }
 
 canvas {
@@ -80,4 +81,42 @@ canvas {
 
 #bg-color{
   z-index: 1000;
+}
+
+#tooltip{
+  position: relative;
+  cursor: pointer;
+  border-bottom: 2px;
+  padding: 7px;
+}
+
+#tooltipText{
+  position: absolute;
+  left: 50%;
+  top:0;
+  transform: translateX(-50%);
+  background-color: #000;
+  color: #fff;
+  white-space: nowrap;
+  padding: 10px;
+  border-radius: 7px;
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+
+#tooltipText::before{
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 100%;
+  transform: translateX(-50%);
+  border: 15px solid;
+  border-color: #000 #0000 #0000 #0000;
+}
+
+#tooltip:hover #tooltipText{
+  top: -50%;
+  visibility: visible;
+  opacity: 1;
 }
