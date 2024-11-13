@@ -1,4 +1,5 @@
 const express = require('express');
+const advertisementController = require('./AdvertisementController');
 const cors = require('cors');
 const { dynamoDb } = require('./awsConfig');
 const websSocketClient = require('../server/WebsocketClient')
@@ -13,7 +14,7 @@ const { getSignedUrl } = require('@aws-sdk/s3-request-presigner');
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 6000;
+const PORT = process.env.PORT || 5000;
 
 const s3Client = new S3Client({
   region: process.env.AWS_REGION,
@@ -178,10 +179,18 @@ const server = http.createServer((req,res) => {
     res.end('WebSocket is running ');
 })
 
-server.listen(process.env.PORT || 8000, () => {
-  console.log('Web socket server running on port 8000')
+server.listen(process.env.PORT || 6000, () => {
+  console.log('Web socket server running on port 6000')
 })
 
+
+// Route for advertisements (post, get and delete all works)
+
+app.post('/createAds',advertisementController.createAd);
+app.put('/addTvs',advertisementController.addTv);
+app.get('/getAds', advertisementController.retrieveAllAdvertisments);
+app.post('/pushAdsToTv',advertisementController.pushTvAdvertisement);
+app.delete('/deleteAd/:adID', advertisementController.deleteAd);
 websSocketClient.setupWebSocketServer(server)
 
 app.listen(PORT, () => {
