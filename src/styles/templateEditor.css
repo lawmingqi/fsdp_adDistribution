@@ -1,23 +1,26 @@
 .template-editor-container {
+  font-family: "Space Mono", monospace;
   display: flex;
   height: 100vh;
   position: relative;
+
 }
 
 .sidebar {
-  width: 45px;
-  height: 70%;
+  margin-top: 8%;
+  width: 50px;
+  height: 65%;
   background-color: #a3a3a3;
   display: flex;
   flex-direction: column;
   align-items: center;
-  position: relative;
-  top: 45%; 
+  position: absolute;
+  top: 50%; 
   left: 100px;
   transform: translateY(-50%);
   z-index: 1;
   border-radius: 10px;
-  justify-content: center; 
+  justify-content: flex-start;
  
 }
 
@@ -29,7 +32,8 @@
 
 .main-content {
   flex-grow: 1;
-  padding: 20px;
+  margin-left: 75px;
+  margin-bottom: 15px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -65,7 +69,7 @@
 }
 
 .editor-title {
-  font-size: 34px;
+  font-size: 30px;
   font-weight: bold;
   margin-bottom: 3em;
 }
@@ -119,4 +123,20 @@ canvas {
   top: -50%;
   visibility: visible;
   opacity: 1;
+}
+
+.breadcrumb {
+  font-size: 14px;
+  color: #b0b0b0; 
+  margin-left: 20px;
+  margin-top: 30px;
+}
+
+.breadcrumb a {
+  text-decoration: none;
+  color: #007BFF; 
+}
+
+.breadcrumb-link:hover {
+  text-decoration: underline; 
 }

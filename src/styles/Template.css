@@ -7,9 +7,68 @@
 
 h1 {
   z-index: 1px;
-  font-size: 15px;
-  text-align: left;
+  font-size: 17px;
   color: #000000;
+}
+
+.templates-header {
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.text {
+  text-align: center;
+  font-size: 20px;
+  font-weight: bold;
+  color: #333;
+}
+
+.button-container {
+  position: absolute;
+  bottom: 20px; 
+  right: 20px;  
+  display: flex;
+  gap: 10px;
+}
+
+.view-all-button,
+.create-new-button {
+  font-family: "Space Mono", monospace;
+  background-color: #b4b0fe;
+  color: white;
+  border: none;
+  cursor: pointer;
+  border-radius: 5px;
+  padding: 8px;
+  font-size: 11px;
+  text-decoration: none;
+}
+
+.view-all-button:hover,
+.create-new-button:hover {
+  background-color: #8b86ec;
+}
+
+.view-all-button a,
+.create-new-button a {
+  text-decoration: none;
+  color: white;
+}
+
+.breadcrumb {
+  font-size: 14px;
+  color: #b0b0b0;
+  margin-left: 20px;
+  margin-top: 30px;
+}
+
+.breadcrumb a {
+  text-decoration: none;
+  color: #007bff;
+}
+
+.breadcrumb a:hover {
+  text-decoration: underline;
 }
 
 .slider {
@@ -40,6 +99,7 @@ h1 {
   height: 220px;
   opacity: 1;
   transition: 0.3s ease-in-out;
+  border-radius: 0px;
 }
 
 .item:hover img,
@@ -55,7 +115,7 @@ h1 {
   background-color: transparent;
   border: none;
   font-size: xx-large;
-  font-family: monospace;
+  font-family: "Space Mono", monospace;
   font-weight: bold;
   cursor: pointer;
   z-index: 10;
@@ -72,11 +132,11 @@ h1 {
 }
 
 #next {
-  right: 0%;
+  right: 5%;
 }
 
 #prev {
-  left: 0%;
+  left: 5%;
 }
 
 @media (max-width: 768px) {

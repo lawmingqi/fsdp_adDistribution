@@ -4,14 +4,16 @@
     justify-content: space-between; 
     color: #333;
     background-color: #fff;  
-    border-bottom: 2px solid #ddd;
-  }
-  
+    position: relative;
+    border-bottom: 2px solid #888888;  
+    margin-bottom: -3px;
+}  
   .navbar-logo img {
     height: 70px;  
   }
   
   .navbar-links {
+    font-size: 13px;
     list-style: none;
     display: flex; 
     gap: 20px;    

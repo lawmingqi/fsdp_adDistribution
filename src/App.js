@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import TemplateEditor from './components/templateEditor';
 import FileUpload from './components/FileUpload';
 import TemplatePage from './components/templatePage';
+import ViewAllTemplates from "./components/viewAllTemplates";
 
 import Home from './components/home';
 
@@ -13,8 +14,9 @@ const App = () => {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/manage-templates" element={<TemplatePage />} />
+        <Route path="/manage-templates/view-all" element={<ViewAllTemplates />} />
         <Route path="/file-management" element={<FileUpload />} />
-        <Route path="/manage-templates/template-editor" element={<><FileUpload/> <TemplateEditor/> </>} />
+        <Route path="/template-editor" element={<TemplateEditor/>} />
         {/* Default route for undefined paths */}
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>

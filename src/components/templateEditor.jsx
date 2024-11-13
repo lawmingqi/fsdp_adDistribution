@@ -1,9 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Canvas, Rect, Circle, IText, FabricImage } from 'fabric';
-import { Link } from 'react-router-dom';
+import { Link } from "react-router-dom";
 import '../styles/templateEditor.css';
+import Navbar from './navbar';
 import { FaImage, FaVideo, FaSquare, FaCircle, FaFont, FaSave } from 'react-icons/fa';
-import logo from '../assets/githubbies-logo.jpg'
 
 //import Settings from './toolsSettings';
 const TemplateEditor = () => {
@@ -395,119 +395,112 @@ const setCanvasBackgroundColor = (color) => {
 
   return (
     <div className = "template-editor">
-      <nav className="navbar">
-                <div className="navbar-logo">
-                    <img src={logo} alt="Logo" />
-                </div>
-                <ul className="navbar-links">
-                    <li><Link to="/">Dashboard</Link></li>
-                    <li><Link to="/file-management">File Management</Link></li>
-                    <li><Link to="/template-editor">Template Editor</Link></li>
-                    <li><Link to="/media-management">Media Management</Link></li>
-                </ul>
-            </nav>
-            <div className="template-editor-container">
-        <div className="sidebar">
-          <input
-            type="color"
-            id="bg-color"
-            value={backgroundColor}
-            onChange={handleBackgroundColorChange}
+      <Navbar/>
+      <div className="breadcrumb">
+        <Link to="/">Home</Link> &gt; <Link to="/manage-templates">Templates</Link> &gt;
+        <span> New Template</span>
+      </div>
+
+      <div className="sidebar">
+        <input
+          type="color"
+          id="bg-color"
+          value={backgroundColor}
+          onChange={handleBackgroundColorChange}
+        />
+        <div className="sidebar-item" onClick={addRectangle}>
+          <FaSquare size={20} />
+        </div>
+        <div className="sidebar-item" onClick={addCircle}>
+          <FaCircle size={20} />
+        </div>
+        <div className="sidebar-item" onClick={addText}>
+          <FaFont size={20} />
+        </div>
+        <div className="sidebar-item">
+          <label htmlFor="image-upload">
+            <FaImage size={20} />
+          </label>
+          <input 
+            id="image-upload" 
+            type="file" 
+            onChange={handleImageUpload} 
+            accept="image/*" 
+            style={{ display: 'none' }}
           />
-          <div className="sidebar-item" onClick={addRectangle}>
-            <FaSquare size={20} />
-          </div>
-          <div className="sidebar-item" onClick={addCircle}>
-            <FaCircle size={20} />
-          </div>
-          <div className="sidebar-item" onClick={addText}>
-            <FaFont size={20} />
-          </div>
-          <div className="sidebar-item">
-            <label htmlFor="image-upload">
-              <FaImage size={20} />
-            </label>
-            <input 
-              id="image-upload" 
-              type="file" 
-              onChange={handleImageUpload} 
-              accept="image/*" 
-              style={{ display: 'none' }}
-            />
-          </div>
-          <div className="sidebar-item">
-            <label htmlFor="video-upload">
-              <FaVideo size={20} />
-            </label>
-            <input 
-              id="video-upload" 
-              type="file" 
-              onChange={handleVideoUpload} 
-              accept="video/*" 
-              style={{ display: 'none' }}
-            />
-          </div>
-          <div className="sidebar-item" onClick={handleSaveTemplate}>
-            <FaSave size={20} />
-          </div>
+        </div>
+        <div className="sidebar-item">
+          <label htmlFor="video-upload">
+            <FaVideo size={20} />
+          </label>
+          <input 
+            id="video-upload" 
+            type="file" 
+            onChange={handleVideoUpload} 
+            accept="video/*" 
+            style={{ display: 'none' }}
+          />
+        </div>
+        <div className="sidebar-item" onClick={handleSaveTemplate}>
+          <FaSave size={20} />
+        </div>
+      </div>
+
+      <div className="main-content">
+        <div className="top-bar">
+          <h2 className="editor-title">New Template</h2>
         </div>
 
-        <div className="main-content">
-          <div className="top-bar">
-            <h2 className="editor-title">Template Editor</h2>
+        <canvas ref={canvasRef} style={{ border: '1px solid #000', marginLeft: 'auto', marginRight: 'auto', display: 'block' }}></canvas>
+
+        {/* Render tools only if an object is selected */}
+        {showTools && selectedObject && (
+          <div className="tools">
+            {/* If the selected object is text */}
+            {selectedObject.type === 'i-text' && (
+              <>
+                <select onChange={(e) => changeTextFont(e.target.value)}>
+                  <option value="Arial">Arial</option>
+                  <option value="Courier">Courier</option>
+                  <option value="Times New Roman">Times New Roman</option>
+                </select>
+                <input
+                  type="color"
+                  onChange={(e) => changeTextColor(e.target.value)}
+                  title="Text Color"
+                />
+                <input
+                  type="number"
+                  value={selectedObject.fontSize}
+                  placeholder="Font Size"
+                  onChange={(e) => changeTextSize(Number(e.target.value))}
+                />
+              </>
+            )}
+
+            {selectedObject.type !== 'i-text' && (
+              <>
+                <input
+                  type="number"
+                  value={width}
+                  placeholder="Width"
+                  onChange={(e) => changeWidth(Number(e.target.value))}
+                />
+                <input
+                  type="number"
+                  value={height}
+                  placeholder="Height"
+                  onChange={(e) => changeHeight(Number(e.target.value))}
+                />
+                <input
+                  type="color"
+                  onChange={(e) => changeShapeColor(e.target.value)}
+                  title="Shape Color"
+                />
+              </>
+            )}
           </div>
-
-          <canvas ref={canvasRef} style={{ border: '1px solid #000', marginLeft: 'auto', marginRight: 'auto', display: 'block' }}></canvas>
-
-          {/* Render tools only if an object is selected */}
-          {showTools && selectedObject && (
-            <div className="tools">
-              {/* If the selected object is text */}
-              {selectedObject.type === 'i-text' && (
-                <>
-                  <select onChange={(e) => changeTextFont(e.target.value)}>
-                    <option value="Arial">Arial</option>
-                    <option value="Courier">Courier</option>
-                    <option value="Times New Roman">Times New Roman</option>
-                  </select>
-                  <input
-                    type="color"
-                    onChange={(e) => changeTextColor(e.target.value)}
-                    title="Text Color"
-                  />
-                  <input
-                    type="number"
-                    value={selectedObject.fontSize}
-                    placeholder="Font Size"
-                    onChange={(e) => changeTextSize(Number(e.target.value))}
-                  />
-                </>
-              )}
-
-              {selectedObject.type !== 'i-text' && (
-                <>
-                  <input
-                    type="number"
-                    value={width}
-                    placeholder="Width"
-                    onChange={(e) => changeWidth(Number(e.target.value))}
-                  />
-                  <input
-                    type="number"
-                    value={height}
-                    placeholder="Height"
-                    onChange={(e) => changeHeight(Number(e.target.value))}
-                  />
-                  <input
-                    type="color"
-                    onChange={(e) => changeShapeColor(e.target.value)}
-                    title="Shape Color"
-                  />
-                </>
-              )}
-            </div>
-          )}
-        </div>
+        )}
       </div>
     </div>
   );

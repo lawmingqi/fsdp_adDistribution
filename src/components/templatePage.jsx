@@ -1,4 +1,7 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate,Link } from "react-router-dom";
+
+
 import template1 from "../assets/Burger Food Super Deal Restaurant Advertising Poster.jpg";
 import template2 from "../assets/Happy Hour Beer Instagram Story.mp4";
 import template3 from "../assets/Pink and Peach Photo Food Bread Ads Instagram Story.png";
@@ -11,6 +14,10 @@ import "../styles/Template.css";
 import Navbar from "./navbar";
 
 const TemplatePage = () => {
+  const navigate = useNavigate();
+  const handleClick = () => {
+    navigate("/template-editor");
+  };
   const [active, setActive] = useState(0); // State to track the active template
   const templates = [
     {
@@ -65,6 +72,8 @@ const TemplatePage = () => {
   ];
 
   useEffect(() => {
+
+
     let items = document.querySelectorAll(".slider .item");
     let next = document.getElementById("next");
     let prev = document.getElementById("prev");
@@ -118,6 +127,15 @@ const TemplatePage = () => {
   return (
     <div className="template-page">
       <Navbar />
+      <div className="breadcrumb">
+        <Link to = "/" className="breakcrumb-link">Home</Link> &gt;
+        <span> Templates</span>
+      </div>
+
+      <div className="templates-header">
+        <div className="text">Recommended Templates</div>
+      </div>    
+
       <div className="slider">
         {templates.map((template, index) => (
           <div key={index} className="item">
@@ -138,6 +156,15 @@ const TemplatePage = () => {
         <button id="next">{">"}</button>
         <button id="prev">{"<"}</button>
       </div>
+
+      <div className="button-container">
+          <button className="view-all-button">
+            <Link to="/manage-templates/view-all">View All Templates</Link>
+          </button>
+          <button className="create-new-button" onClick={handleClick}>
+            Create New Template
+          </button>
+        </div>
     </div>
   );
 };
