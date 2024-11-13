@@ -1,0 +1,95 @@
+.dashboard {
+  font-family: "Space Mono", monospace;
+  font-weight: 400;
+  font-style: normal;
+  color: #333;
+}
+
+.navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: #333;
+}
+.navbar-logo{
+  border-radius: none;
+}
+
+.navbar-logo img {
+  height: 100px;
+}
+
+.navbar-links {
+  list-style: none;
+  display: flex;
+  gap: 15px;
+  margin: 0;
+}
+
+.navbar-links li {
+  display: inline;
+}
+
+.navbar-links a {
+  color: #333;
+  text-decoration: none;
+  padding: 8px 12px;
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+}
+
+.navbar-links a:hover {
+  background-color: #555;
+  color: white;
+}
+
+.dashboard-content {
+  padding: 20px;
+  text-align: center;
+}
+
+.dashboard-title {
+  font-size: 3em;
+  margin-bottom: 2.5em;
+}
+
+.dashboard-sections {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.dashboard-section {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 20px;
+  width: 500px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+.dashboard-section h2 {
+  font-size: 1.5rem;
+  margin-bottom: 10px;
+}
+
+.dashboard-section p {
+  font-size: 1rem;
+  color: #555;
+}
+
+.dashboard-btn {
+  margin-top: 10px;
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.dashboard-btn:hover {
+  background-color: #0056b3;
+}
