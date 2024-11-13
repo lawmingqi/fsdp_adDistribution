@@ -41,7 +41,7 @@ app.post('/api/generate-presigned-url', async (req, res) => {
   console.log("FileId", FileId);
   // Put the FileID into s3 and generate a presigned Url (allows anyone to access the aws s3 bucket for a limited time)
   const command = new PutObjectCommand({
-    Bucket: process.env.REACT_APP_S3_BUCKET_NAME,
+    Bucket: process.env.S3_BUCKET_NAME,
     Key: FileId,
     ContentType: FileType,
   });
@@ -67,7 +67,7 @@ app.get('/api/files', async (req, res) => {
     for (const item of data.Items){
       // create a get
       const getObjectParams = {
-        Bucket: process.env.REACT_APP_S3_BUCKET_NAME,
+        Bucket: process.env.S3_BUCKET_NAME,
         Key: item.FileId,
       };
       const command = new GetObjectCommand(getObjectParams);
@@ -147,7 +147,7 @@ app.delete('/api/delete-file/:fileKey', async (req, res) => {
   const { fileKey } = req.params;
   try {
     const deleteParams = {
-      Bucket: process.env.REACT_APP_S3_BUCKET_NAME,
+      Bucket: process.env.S3_BUCKET_NAME,
       Key: fileKey, 
     };
 
