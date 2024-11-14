@@ -23,7 +23,7 @@ const Navbar = () => {
             <Link to="/template-editor">Template Editor</Link>
           </li>
           <li>
-            <Link to="/media-management">Media Management</Link>
+            <Link to="/advertisement-display">Advertisement Display</Link> {/* New link */}
           </li>
         </ul>
       </nav>

@@ -28,6 +28,10 @@
     "react-router-dom": "^6.28.0",
     "react-scripts": "5.0.1",
     "socket.io": "^4.8.1",
+<<<<<<< HEAD
+=======
+    "socket.io-client": "^4.8.1",
+>>>>>>> a89337572223796ac8cf939de38cdd9392bc7ded
     "uuid": "^11.0.2",
     "web-vitals": "^2.1.4",
     "ws": "^8.18.0"

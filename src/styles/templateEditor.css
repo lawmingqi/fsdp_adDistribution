@@ -1,3 +1,7 @@
+body{
+  font-family: "Space Mono", monospace;
+}
+
 .template-editor-container {
   font-family: "Space Mono", monospace;
   display: flex;
