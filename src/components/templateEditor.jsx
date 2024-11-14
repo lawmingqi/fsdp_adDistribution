@@ -381,11 +381,6 @@ const setCanvasBackgroundColor = (color) => {
   return (
     <div className = "template-editor">
       <Navbar/>
-      <div className="breadcrumb">
-        <Link to="/">Home</Link> &gt; <Link to="/manage-templates">Templates</Link> &gt;
-        <span> New Template</span>
-      </div>
-
       <div className="sidebar">
         <input
           type="color"
