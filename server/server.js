@@ -15,7 +15,7 @@ dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
-
+console.log("PORT", PORT);
 const s3Client = new S3Client({
   region: process.env.AWS_REGION,
   credentials: {
@@ -27,7 +27,7 @@ const s3Client = new S3Client({
 // The idea behind linking s3 and dynamoDB together is with a same ID (uuidv4) This would be the partition key and the id for dynamo and s3 bucket respectively
 
 app.use(cors({
-  origin: 'http://localhost:3000', // use frontend url
+  origin: ['http://localhost:3000',"ws://localhost:3000"], // use frontend url
   methods: ['GET', 'POST', 'DELETE'],
   allowedHeaders: ['Content-Type'],
   credentials: true,
@@ -171,18 +171,8 @@ app.delete('/api/delete-file/:fileKey', async (req, res) => {
   }
 });
 
-
-// Initialize the  http server 
-
-const server = http.createServer((req,res) => {
-    res.writeHead(200, {'Content-Type':'application/json'})
-    res.end('WebSocket is running ');
-})
-
-server.listen(process.env.PORT || 6000, () => {
-  console.log('Web socket server running on port 6000')
-})
-
+//Create a proxy httpServer to access localhost:5000 from ddi
+const server = http.createServer(app);
 
 // Route for advertisements (post, get and delete all works)
 
@@ -191,8 +181,12 @@ app.put('/addTvs',advertisementController.addTv);
 app.get('/getAds', advertisementController.retrieveAllAdvertisments);
 app.post('/pushAdsToTv',advertisementController.pushTvAdvertisement);
 app.delete('/deleteAd/:adID', advertisementController.deleteAd);
-websSocketClient.setupWebSocketServer(server)
+websSocketClient.setupWebSocketServer(server);
 
-app.listen(PORT, () => {
+app.listen(PORT, 'localhost', () => {
   console.log(`Server running on port ${PORT}`);
+});
+
+server.listen(PORT, () => {
+  console.log('Websocket server running on port 5000');
 });

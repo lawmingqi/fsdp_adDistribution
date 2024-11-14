@@ -1,5 +1,5 @@
 const Advertisement = require('./Advertisement');
-const dynamoDbStreams = require('./manageStreams');
+const {retrieveStreamInfo} = require('./manageStreams');
 const retrieveAllAdvertisments = async(req,res) => {
     try{
         const advertisements = await Advertisement.retireveAllAds();
@@ -21,10 +21,9 @@ const pushTvAdvertisement = async(req,res) => {
         if(addTvToAds.Attributes == null){
             return res.status(404).send("AdID and tvID specified does not exists");
         }
+        retrieveStreamInfo('Advertisement');
         return res.status(200).json({"message" : "Sucessfully added tvIDs to the advertisment table", updatedAttributes:addTvToAds.Attributes});
-
-        // Retrieve real time record inserted and push to tv
-        dynamoDbStreams.retrieveStreamInfo('Advertisement',adID);
+        
 
     }
     
@@ -76,6 +75,7 @@ const addTv = async(req,res) => {
             return res.status(404).send("AdID and tvID specified does not exists");
         }
         return res.status(200).json({"message" : "Sucessfully added tvIDs to the advertisment table", updatedAttributes:addTvToAds.Attributes});
+
     }
     
     catch (error){
