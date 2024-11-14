@@ -91,25 +91,55 @@ const TemplateEditor = () => {
       const reader = new FileReader();
   
       reader.onload = (readerEvent) => {
-        const img = new Image();
+        const fileType = file.type;
         
-        img.onload = () => {
-          const fabricImage = new FabricImage(img, {
-            left: 100,
-            top: 100,
-            angle: 0,
-            opacity: 1,
-          });
-          canvas.current.add(fabricImage);
-        };
+        if (fileType === "image/gif") {
+          const gifElement = document.createElement("img");
+          gifElement.src = readerEvent.target.result;
+        
+          gifElement.onload = () => {
+            const canvasElement = canvas.current;
+            const fabricGif = new FabricImage(gifElement, {
+              left: 100,
+              top: 100, 
+              selectable: true,
+              hasControls: true,
+            });
+
+            canvasElement.add(fabricGif);
+
+            const updateGIFFrame = () => {
+              canvasElement.requestRenderAll(); 
+              requestAnimationFrame(updateGIFFrame); 
+            };
   
-        img.onerror = (err) => {
-          console.error("Error loading image: ", err);
-        };
-  
-        img.src = readerEvent.target.result;
+            updateGIFFrame();
+
+            gifElement.onerror = (err) => {
+              console.error("Error loading GIF: ", err);
+            };
+          };
+        } 
+        else {
+          const img = new Image();
+          img.onload = () => {
+            const fabricImage = new FabricImage(img, {
+              left: 100,
+              top: 100,
+              angle: 0,
+              opacity: 1,
+            });
+            canvas.current.add(fabricImage);
+          };
+    
+          img.onerror = (err) => {
+            console.error("Error loading image: ", err);
+          };
+    
+          img.src = readerEvent.target.result;
+        }
       };
-  
+    
       reader.onerror = (err) => {
         console.error("Error reading file: ", err);
       };
@@ -208,7 +238,7 @@ const TemplateEditor = () => {
     }
   };
   
-  /*const handleSaveTemplateAsImage = () => {
+  const handleSaveTemplateAsImage = () => {
 
     const templateData = canvas.current.toJSON(['backgroundColor']);
     console.log('Template Data:', templateData);
@@ -254,56 +284,11 @@ const TemplateEditor = () => {
     setTimeout(() => {
       mediaRecorder.stop();
     },5000);
-  };*/
+  };
 
-  // save template functionality
+
+
   const handleSaveTemplate = () => {
-    // Prepare the template metadata
-    const templateId = "template123"; // This can be dynamically generated
-    const objects = canvas.current.getObjects(); // Get all objects on canvas
-    const metadata = objects.map((obj, index) => {
-        // Extract the properties of each object
-        const properties = {
-            templateId: templateId,  // Link to the template
-            objectId: `object${index}`, // Unique ID for each object
-            type: obj.type,  // Type of the object (rect, circle, image, text)
-            left: obj.left,
-            top: obj.top,
-            width: obj.width,
-            height: obj.height,
-            fill: obj.fill || null, // Color or properties of the object
-            angle: obj.angle,
-            fontSize: obj.fontSize || null, // Text objects
-            fontFamily: obj.fontFamily || null, // Text objects
-            opacity: obj.opacity || 1,  // Optional, in case of images or videos
-        };
-        return properties;
-    });
-
-    // Save to DynamoDB (backend will handle this part)
-    saveTemplateMetadataToDynamoDB(metadata);
-};
-
-const saveTemplateMetadataToDynamoDB = async (metadata) => {
-  try {
-    const response = await fetch('/api/save-template-metadata', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ metadata }),
-    });
-    
-    const data = await response.json();
-    console.log('Server Response:', data);
-  } catch (error) {
-    console.error('Error saving template metadata:', error);
-  }
-};
-
-
-
-  /*const handleSaveTemplate = () => {
     //handleSaveTemplateAsJSON();
     const videoObjects = canvas.current.getObjects().filter(obj => obj.type === 'image' && obj.getElement().tagName ==='VIDEO');
 
@@ -312,7 +297,7 @@ const saveTemplateMetadataToDynamoDB = async (metadata) => {
     } else{
       handleSaveTemplateAsImage();
     }
-  };*/
+  };
 
   // const handleSaveTemplateAsJSON = () => {
   //   const canvasJSON = canvas.current.toJSON();
@@ -425,7 +410,7 @@ const setCanvasBackgroundColor = (color) => {
             id="image-upload" 
             type="file" 
             onChange={handleImageUpload} 
-            accept="image/*" 
+            accept="image/gif, image/jpeg, image/jpg, image/png" 
             style={{ display: 'none' }}
           />
         </div>
