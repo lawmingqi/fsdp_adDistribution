@@ -127,4 +127,32 @@ class tvGroup{
         }
     }
 
+    static addTvToGroup = async (groupID, tv) => {
+        const params = {
+            TableName: "tvGroup",
+            Key: {
+                groupID: groupID
+            },
+            UpdateExpression: "SET tv = list_append(tv, :tv)",
+            ExpressionAttributeValues: {
+                ":tv": [tv]
+            }
+        }
+
+        try{
+            const data = await dynamoDb.send(new UpdateCommand(params));
+
+            if (!data){
+                return null;
+            }
+
+            return data;
+        }
+
+        catch (err){
+            console.log(err);
+            return null;
+        }
+    }
+
 }

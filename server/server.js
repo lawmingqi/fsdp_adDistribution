@@ -20,6 +20,7 @@ const {
   ScanCommand,
   PutCommand,
   DeleteCommand,
+  GetCommand,
 } = require("@aws-sdk/lib-dynamodb");
 const { v4: uuidv4 } = require("uuid");
 const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
@@ -109,6 +110,42 @@ app.get("/api/files", async (req, res) => {
   }
 });
 
+
+app.get('/api/getfiles/:fileID', async (req,res) => {
+  try{
+    const fileID = req.params.fileID;
+    console.log("fileID", fileID);
+    const params = {
+      TableName: process.env.DYNAMODB_TABLE_FILES,
+      Key:{
+        "FileId" : fileID
+      }
+    };
+
+    const data = await dynamoDb.send(new GetCommand(params));
+    console.log("data", data);
+    const metadata = data.$metadata.httpStatusCode;
+    switch (metadata){
+      case 200:
+        res.setHeader('Content-Type', 'application/json');
+        res.status(200).json(data.Item);
+        break;
+      case 404:
+        res.status(404).json({message: "File not found"});
+      case 400:
+        res.status(400).json({message: "Bad Request"});
+      default:
+        res.status(500).json({message: "Internal Server Error"});
+        break;
+    }
+    
+  }
+  catch (err){
+    console.error("Error fetching file:", err);
+    res.status(500).json({message: "Internal Server Error"});
+  }
+})
+
 // Upload advertisement metadata to DynamoDB
 app.put("/create/advertisements", async (req, res) => {
   const { templateId, Status, templateType, TemplateUrl } = req.body;
@@ -185,6 +222,7 @@ app.delete("/api/delete-file/:fileKey", async (req, res) => {
 
 // Routes for advertisements
 app.post("/createAds", advertisementController.createAd);
+app.get('/getAdID:/FileId',advertisementController.retrieveAdID)
 app.put("/addTvs", advertisementController.addTv);
 app.get("/getAds", advertisementController.retrieveAllAdvertisements);
 app.post("/pushAdsToTv/:adID", advertisementController.pushTvAdvertisement);
@@ -223,8 +261,14 @@ app.post("/api/upload-file", upload.single("file"), (req, res) => {
   res.status(200).json({ fileUrl });
 });
 
+
+
+
 server.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
+  console.log(`WebSocket Server running on port ${PORT}`);
+})
+
+
+
 
 console.log("Socket.io server listening on port 5000");
