@@ -1,144 +1,118 @@
+import React, { useState, useEffect } from "react";
 import io from "socket.io-client";
-import { useEffect, useState } from "react";
+import "../styles/Advert.css";
 import Navbar from "./navbar";
 
-const socket = io.connect("http://localhost:5000");
+const socket = io.connect("http://localhost:5000"); // Adjust to your backend URL
 
 const AdvertisementDisplay = () => {
-  const [tv, setTv] = useState("");
-  const [selectedFile, setSelectedFile] = useState(null);
-  const [previewUrl, setPreviewUrl] = useState(null);
-  const [messageReceived, setMessageReceived] = useState("");
+  const [ads, setAds] = useState([]);
+  const [tvID, setTvID] = useState("");
+  const [selectedAd, setSelectedAd] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-
-  const joinTv = () => {
-    if (tv !== "") {
-      socket.emit("join_tv", tv);
-    }
-  };
-
-  const sendMessage = () => {
-    if (selectedFile) {
-      socket.emit("send_message", { message: previewUrl, tv });
-    }
-  };
-
-  const openFileModal = () => {
-    setIsModalOpen(true);
-  };
-
-  const handleFileChange = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      setSelectedFile(file);
-      setPreviewUrl(URL.createObjectURL(file)); // Generate a preview URL for the selected file
-    }
-  };
-
-  const confirmFileSelection = () => {
-    setIsModalOpen(false);
-  };
-
-  const cancelFileSelection = () => {
-    setSelectedFile(null);
-    setPreviewUrl(null);
-    setIsModalOpen(false);
-  };
+  const [displayedAd, setDisplayedAd] = useState(null);
 
   useEffect(() => {
+    fetchAds();
+
+    // Listen for the receive_message event to display the ad in real-time
     socket.on("receive_message", (data) => {
-      if (data.tv === tv) {
-        setMessageReceived(data.message);
-      }
+      setDisplayedAd(data.message); // The message should contain the file URL
     });
 
     return () => {
       socket.off("receive_message");
     };
-  }, [tv]);
+  }, []);
+
+  const fetchAds = async () => {
+    try {
+      const response = await fetch("/getAds");
+      const data = await response.json();
+      setAds(data);
+    } catch (error) {
+      console.error("Error fetching ads:", error);
+    }
+  };
+
+  const handleSelectFile = () => {
+    setIsModalOpen(true); // Open the modal to select an ad
+  };
+
+  const handleDisplayAd = () => {
+    if (!selectedAd) {
+      alert("Please select an advertisement first.");
+      return;
+    }
+    if (!tvID) {
+      alert("Please enter a TV ID.");
+      return;
+    }
+    socket.emit("join_tv", tvID); // Join the specified TV room
+    socket.emit("send_message", { message: selectedAd.FileUrl, tv: tvID });
+    setIsModalOpen(false); // Close the modal
+  };
+
+  const handleAdSelection = (ad) => {
+    setSelectedAd(ad);
+    setIsModalOpen(false);
+  };
 
   return (
-    <div>
+    <div className="advertisement-display-container">
       <Navbar />
-      <h2>Advertisement Display</h2>
-      <div className="AdvertisementDisplay">
+      <h2 className="title">Advertisement Display</h2>
+
+      <div className="control-panel">
         <input
           placeholder="TV ID..."
-          value={tv}
-          onChange={(event) => setTv(event.target.value)}
+          value={tvID}
+          onChange={(event) => setTvID(event.target.value)}
         />
-        <button onClick={joinTv}>Set TV</button>
-
-        {/* File selection button */}
-        <button onClick={openFileModal}>Select File</button>
-        
-        {/* Modal for file selection */}
-        {isModalOpen && (
-          <div className="modal">
-            <div className="modal-content">
-              <h3>Select an Advertisement File</h3>
-              <input type="file" onChange={handleFileChange} />
-              {previewUrl && (
-                <div className="preview">
-                  <h4>Preview:</h4>
-                  {selectedFile.type.startsWith("video") ? (
-                    <video controls src={previewUrl} width="100%" />
-                  ) : (
-                    <img src={previewUrl} alt="Preview" width="100%" />
-                  )}
-                </div>
-              )}
-              <button onClick={confirmFileSelection}>Confirm</button>
-              <button onClick={cancelFileSelection}>Cancel</button>
-            </div>
-          </div>
-        )}
-
-        <button onClick={sendMessage} disabled={!selectedFile}>Push to TV</button>
-        
-        <h1>Advertisement: </h1>
-        {messageReceived && (
-          <div className="received-ad">
-            {messageReceived.endsWith(".mp4") ? (
-              <video controls src={messageReceived} width="100%" />
-            ) : (
-              <img src={messageReceived} alt="Advertisement" width="100%" />
-            )}
-          </div>
-        )}
+        <button onClick={handleSelectFile}>Select File</button>
+        <button onClick={handleDisplayAd} disabled={!selectedAd || !tvID}>
+          Push to TV
+        </button>
       </div>
 
-      {/* Add some styling for modal */}
-      <style jsx>{`
-        .modal {
-          position: fixed;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 100%;
-          background-color: rgba(0, 0, 0, 0.5);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          z-index: 1000;
-        }
-        .modal-content {
-          background: white;
-          padding: 20px;
-          border-radius: 8px;
-          max-width: 500px;
-          width: 90%;
-          text-align: center;
-        }
-        .preview {
-          margin-top: 20px;
-          max-width: 100%;
-        }
-        button {
-          margin: 10px;
-          padding: 10px;
-        }
-      `}</style>
+      <h3>Advertisement:</h3>
+      {displayedAd && (
+        <div className="displayed-ad-container">
+          {displayedAd.startsWith("http") ? (
+            <img src={displayedAd} alt="Displayed Ad" className="displayed-ad" />
+          ) : (
+            <p>Unsupported file type</p>
+          )}
+        </div>
+      )}
+
+      {/* Modal for Selecting Ads */}
+      {isModalOpen && (
+        <div className="modal">
+          <div className="modal-content">
+            <h3>Select an Advertisement</h3>
+            <button onClick={() => setIsModalOpen(false)} className="close-btn">Close</button>
+            <div className="ads-list">
+              {ads.map((ad) => (
+                <div
+                  key={ad.FileId}
+                  className="ad-card"
+                  onClick={() => handleAdSelection(ad)}
+                >
+                  {ad.FileType && ad.FileType.startsWith("image") ? (
+                    <img src={ad.FileUrl} alt={ad.FileName} className="ad-thumbnail" />
+                  ) : ad.FileType && ad.FileType.startsWith("video") ? (
+                    <video src={ad.FileUrl} controls className="ad-thumbnail" />
+                  ) : (
+                    <p>Unsupported file type</p>
+                  )}
+                  <p>{ad.FileName}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -52,16 +52,18 @@ const io = new Server(server, {
 io.on("connection", (socket) => {
   console.log(`User Connected: ${socket.id}`);
 
-  socket.on("join_tv", (tv) => {
-    socket.join(tv);
-    console.log(`User ${socket.id} joined TV room: ${tv}`);
+  socket.on("join_tv", (tvID) => {
+    socket.join(tvID);
+    console.log(`User ${socket.id} joined TV room: ${tvID}`);
   });
 
   socket.on("send_message", (data) => {
-    console.log(`Sending message to TV room: ${data.tv}`);
-    io.to(data.tv).emit("receive_message", { message: data.message, tv: data.tv });
+    const { tv, message } = data;
+    console.log(`Sending message to TV room: ${tv}`);
+    io.to(tv).emit("receive_message", { message, tv });
   });
 });
+
 app.use(express.json({ limit: "10mb" }));
 
 // Helper function to generate pre-signed URL
