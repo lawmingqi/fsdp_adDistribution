@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import "../styles/Advert.css";
 import Navbar from "./navbar";
-
 const FileUpload = () => {
   const [file, setFile] = useState(null);
   const [fileList, setFileList] = useState([]);
@@ -19,6 +18,7 @@ const FileUpload = () => {
     try {
       const response = await fetch("/api/files");
       const data = await response.json();
+      console.log(data);
       setFileList(data);
     } catch (error) {
       console.error("Error fetching files:", error);
@@ -73,7 +73,30 @@ const FileUpload = () => {
           FileUrl: key,
         }),
       });
+      
+      const uploadedFile = await fetch(`/api/getfiles/${key}`, {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+      })
 
+      if(uploadedFile.status === 200){
+        const fileData = await uploadedFile.json();
+        await fetch("/createAds", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            "adTitle": fileName,
+            "adContent": fileData,  // Assuming uploadedFile is the data you want to send
+            "adType": fileType,
+            "uploadDate": new Date().toISOString(),
+            "assignedTvs": [],
+            "FileId": key,
+          }),
+        });
+      }
+      else {
+        console.log("Error uploading file");
+      }
       fetchFiles();
       setFile(null);
       setPreviewUrl(null);
@@ -89,25 +112,51 @@ const FileUpload = () => {
   const deleteFile = async (fileKey) => {
     try {
       await fetch(`/api/delete-file/${fileKey}`, { method: "DELETE" });
+      // call another thing to get the ad id
+      const fileID = await fetch(`/getAdID/${fileKey}`,{
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+      })
+      console.log(fileID.json());
+      if(fileID.status === 200){
+        const adID = await fileID.json();
+        console.log(adID);
+        await fetch(`/deleteAd/${adID}`,{
+          method: "DELETE",
+        });
+      }
+      await fetch(`deleteAd/${fileKey}`, { method: "DELETE" });
       fetchFiles();
     } catch (error) {
       console.error("Error deleting file:", error);
     }
   };
 
-  const handleDisplay = (fileKey) => {
+  const handleDisplay = (tvID) => {
     const selectedTV = prompt("Enter the TV ID to display this ad:");
-    if (selectedTV) {
-      fetch(`http://localhost:5000/api/advertisement/display`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ adID: fileKey, tvID: selectedTV }),
-      })
-        .then((response) => response.json())
-        .then((data) => console.log(data))
-        .catch((error) => console.error("Error displaying ad:", error));
+    try{
+      if (selectedTV) {
+        const socket = new WebSocket("ws://localhost:5000");
+        if(!socket){
+          
+        }
+        socket.onopen = () => {
+          socket.send(JSON.stringify({"user_id" : tvID}));
+        }
+  
+        socket.onmessage = (event) => {
+          const data = JSON.parse(event.data);
+          console.log(data);
+        };
+      }
     }
-  };
+
+    catch (error) {
+      console.error("Error displaying ad:", error);
+    };
+  }
+    
+
 
   return (
     <div className="file-upload-container">

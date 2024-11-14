@@ -3,11 +3,12 @@ const advertisementController = require('./AdvertisementController');
 const cors = require('cors');
 const { dynamoDb } = require('./awsConfig');
 const ws = require("ws");
+const { createProxyMiddleware } = require('http-proxy-middleware');
 const WebSocketClient =  require('./WebsocketClient');
 const http = require('http');
 const dotenv = require('dotenv');
 const { S3Client, PutObjectCommand, DeleteObjectCommand, GetObjectCommand} = require('@aws-sdk/client-s3');
-const { ScanCommand, PutCommand, DeleteCommand } = require('@aws-sdk/lib-dynamodb');
+const { ScanCommand, PutCommand, DeleteCommand, GetCommand } = require('@aws-sdk/lib-dynamodb');
 const { v4: uuidv4 } = require('uuid');
 const { getSignedUrl } = require('@aws-sdk/s3-request-presigner');
 
@@ -83,6 +84,42 @@ app.get('/api/files', async (req, res) => {
     res.status(500).json({ message: 'Internal server error'});
   }
 });
+
+
+app.get('/api/getfiles/:fileID', async (req,res) => {
+  try{
+    const fileID = req.params.fileID;
+    console.log("fileID", fileID);
+    const params = {
+      TableName: process.env.DYNAMODB_TABLE_FILES,
+      Key:{
+        "FileId" : fileID
+      }
+    };
+
+    const data = await dynamoDb.send(new GetCommand(params));
+    console.log("data", data);
+    const metadata = data.$metadata.httpStatusCode;
+    switch (metadata){
+      case 200:
+        res.setHeader('Content-Type', 'application/json');
+        res.status(200).json(data.Item);
+        break;
+      case 404:
+        res.status(404).json({message: "File not found"});
+      case 400:
+        res.status(400).json({message: "Bad Request"});
+      default:
+        res.status(500).json({message: "Internal Server Error"});
+        break;
+    }
+    
+  }
+  catch (err){
+    console.error("Error fetching file:", err);
+    res.status(500).json({message: "Internal Server Error"});
+  }
+})
 
 // upload the advertisement to DynamoDB
 app.put('/create/advertisements', async (req,res) => {
@@ -177,16 +214,21 @@ const server = http.createServer(app);
 // Route for advertisements (post, get and delete all works)
 
 app.post('/createAds',advertisementController.createAd);
+app.get('/getAdID:/FileId',advertisementController.retrieveAdID)
 app.put('/addTvs',advertisementController.addTv);
 app.get('/getAds', advertisementController.retrieveAllAdvertisements);
 app.post('/pushAdsToTv/:adID',advertisementController.pushTvAdvertisement);
 app.delete('/deleteAd/:adID', advertisementController.deleteAd);
 WebSocketClient.setupWebSocketServer(server);
 
+
 app.listen(PORT, 'localhost', () => {
   console.log(`Server running on port ${PORT}`);
 });
 
+
+
 server.listen(PORT, () => {
-  console.log('Websocket server running on port 5000');
-});
+  console.log(`WebSocket Server running on port ${PORT}`);
+})
+

@@ -1,20 +1,50 @@
 const Advertisement = require('./Advertisement');
 const retrieveStream = require('./getStreamArn');
 const {sendUsersConnected} = require('./WebsocketClient')
+const {s3} = require('./awsConfig');
+const dotenv = require('dotenv');
+dotenv.config();
+const {GetObjectCommand} = require('@aws-sdk/client-s3');
+const uuidv4 = require('uuid').v4;
 let dbStreams = require('./DyanmoStreamsHandler');
 const DyanmoStreamsHandler = require('./DyanmoStreamsHandler');
+const { getSignedUrl } = require('@aws-sdk/s3-request-presigner');
 const retrieveAllAdvertisements = async (req, res) => {
     try {
         const advertisements = await Advertisement.retireveAllAds();
-        if (advertisements.Items.length === 0) {
-            return res.status(404).send(advertisements.Items);
-        }
-        return res.status(200).send(advertisements.Items);
-    } catch (err) {
-        console.error(err);
-        return res.status(500).send("Internal Server Error");
+        for(const item of advertisements.Items){
+        // create a get
+        const getObjectParams = {
+          Bucket: process.env.S3_BUCKET_NAME,
+          Key: item.FileId,
+        };
+        const command = new GetObjectCommand(getObjectParams);
+        const url = await getSignedUrl(s3,command,{expiresIn: 3600});
+        // Dynamically generate the signed url and assign to the File.url property
+        item.FileUrl = url; 
+      }
+      console.log("Metadata",advertisements.$metadata);
+      res.setHeader('Content-Type', 'application/json'); // Ensure JSON header
+      const fileData = advertisements.Items.map(item => ({
+        adID: item.adID,
+        FiletType: item.adContent.FileType,
+        FileSize: item.adContent.FileSize,
+        FileUrl: item.FileUrl,
+        UploadDate: item.uploadDate,
+        FileId: item.FileId,
+        FileName: item.adContent.FileName,
+        assignedTvs: item.assignedTvs,
+      }));
+
+
+      console.log(fileData);
+      res.json(fileData);
+    } 
+    catch (error) {
+      console.error("Error fetching files:", error);
+      res.status(500).json({ message: 'Internal server error'});
     }
-};
+}
 
 const pushTvAdvertisement = async (req, res) => {
     try {
@@ -42,6 +72,11 @@ const pushTvAdvertisement = async (req, res) => {
 const deleteAd = async (req, res) => {
     try {
         const adID = req.params.adID;
+        console.log(adID);
+        const adRecord = await Advertisement.retireveAd(adID);
+        if(adRecord.assignedTvs.length > 0){
+            return res.status(400).send("Ad has tvs assigned to it");
+        }
         const deleteAd = await Advertisement.deleteAd(adID);
         if (deleteAd.$metadata.httpStatusCode !== 200) {
             return res.status(404).send("AdID specified does not exist");
@@ -55,8 +90,10 @@ const deleteAd = async (req, res) => {
 
 const createAd = async (req, res) => {
     try {
-        const { adID, adTitle, adContent, adType, uploadDate, assignedTvs } = req.body;
-        const advertisement = new Advertisement(adID, adTitle, adContent, adType, uploadDate, assignedTvs);
+        const adID = uuidv4(); // Generate a unique identifier for ads 
+        const {adTitle, adContent, adType, uploadDate, assignedTvs, FileId } = req.body;
+        const advertisement = new Advertisement(adID,adTitle, adContent, adType, uploadDate, assignedTvs,FileId);
+        console.log(advertisement);
         const createdAd = await Advertisement.createAd(advertisement);
         if (createdAd == null) {
             return res.status(404).send("AdID specified already exists");
@@ -101,11 +138,34 @@ const addTv = async (req, res) => {
     }
 };
 
+const retrieveAdID = async (req,res) => {
+    try {
+        const fileID = req.params.FileId
+        console.log(fileID);
+        const adId = await Advertisement.retrieveAdByAdID(fileID);
+        const metadata = adId.$metadata.httpStatusCode;
+        switch (metadata) {
+            case 200:
+                return res.status(200).send(adId.Items);
+                break;
+            case 404:
+                return res.status(404).send("Ad not found");
+            default:
+                return res.status(500).send("Internal Server Error");
+        }
+    }
+    catch (err) {
+        console.error(err);
+        return res.status(500).send("Internal Server Error");
+    }
+}
+
 
 module.exports = {
     retrieveAllAdvertisements,
     pushTvAdvertisement,
     deleteAd,
     createAd,
-    addTv
+    addTv,
+    retrieveAdID,
 };

@@ -2,13 +2,14 @@ const { dynamoDb } = require('./awsConfig');
 const { ScanCommand, PutCommand, DeleteCommand, UpdateCommand, GetCommand } = require('@aws-sdk/lib-dynamodb');
 class Advertisement{
     // constructor for advertisements 
-    constructor(adID,adTitle,adContent,adType,uploadDate,assignedTvs){
+    constructor(adID,adTitle,adContent,adType,uploadDate,assignedTvs,FileId){
         this.adID = adID;
         this.adTitle = adTitle;
         this.adType = adType;
         this.adContent = adContent;
         this.uploadDate = uploadDate;
         this.assignedTvs =  assignedTvs;
+        this.FileId = FileId
     } 
     
     // Methods for the advertisements table 
@@ -28,14 +29,13 @@ class Advertisement{
     }
 
     static async deleteAd(adID){
-        console.log(adID);
         const params = {
             TableName: "Advertisement",
             Key:{
                 "adID" : adID
-            }
-        }
+            },
 
+        }
         try{
             const data = await dynamoDb.send(new DeleteCommand(params));
             return data;
@@ -118,6 +118,38 @@ class Advertisement{
             return null
         }
     }
+    
+    static async retrieveAdByAdID(fileID) {
+        console.log(fileID);
+        const params = {
+            TableName: "Advertisement",  // Replace with your table name
+            FilterExpression: "#fileId = :fileId",  // Filter for items where fileId matches the provided value
+            ExpressionAttributeNames: {
+                "#fileId": "fileId",  // Map fileId in case it's a reserved word
+            },
+            ExpressionAttributeValues: {
+                ":fileId": fileIdValue,  // The value of fileId you're searching for
+            },
+            ProjectionExpression: "adId, fileId"  // Retrieve only the adId and fileId attributes
+        };
+        try {
+            const data = await dynamoDb.send(new ScanCommand(params));  // Send Scan command
+            console.log(data);
+
+            // Check if data.Items is empty
+            if (!data.Items || data.Items.length === 0) {
+                console.log("No items found with the given fileID.");
+                return null;  // Return null if no items are found
+            }
+
+            return data.Items;  // Return the matching items
+        } catch (error) {
+            console.error("Error retrieving ad by fileID:", error);
+            return null;  // Return null if there's an error during the scan
+        }
+    }
+
+
 }
 
 

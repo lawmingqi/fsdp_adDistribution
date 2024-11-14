@@ -1,17 +1,20 @@
 // Code for initialising the webSocket client, this is done on a different host 
 
 // Store all connected clients in a hashmap with their corresponding id (id is taken from auth header or frontend side)
-const WebSocket = require('ws');
 const ClientManager = require('./ClientManager');
 // Have to pass the instance of clientManaget from the websocket 
 const wsClient = new ClientManager();
-
-// Allowed origins 
-const allowedOrigin = 'localhost:5000'
+const WebSocket = require('ws');
+const allowedOrigin = ['http://localhost:3000/','localhost:5000']
 // Adding clients to the websocket 
 const setupWebSocketServer = function(server) {
     // fo not upgrade to the server automatically
     const wss = new WebSocket.Server({ noServer: true });
+    wss.on('error', (err) => {
+        console.log('WebSocket server error:', err);
+    });
+    
+    let allow  = false;
     // Initialize the WebSocket server
     try{
         server.on('upgrade', (req, socket, head) => {
@@ -27,17 +30,24 @@ const setupWebSocketServer = function(server) {
                 socket.write('HTTP/1.1 400 Bad Request\r\n\r\n');
                 socket.destroy();
             }
-            if(headers.host == allowedOrigin) {
-                console.log('Origin is allowed');
-                wss.handleUpgrade(req, socket, head, (ws) => {
-                    wss.emit('connection', ws, req);
-                    onConnect(ws, req);
-                });
+            for (const origin of allowedOrigin) {
+                if(headers.origin == origin) {
+                    console.log('Origin is allowed: ',headers.origin);
+                    wss.handleUpgrade(req, socket, head, (ws) => {
+                        wss.emit('connection', ws, req);
+                        onConnect(ws, req);
+                        allow = true
+                    });
+                }
+                
             }
-            else {
-                socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n');
+
+            if (allow == false) {
+                console.log('Origin is not allowed');
+                socket.write('HTTP/1.1 403 Forbidden\r\n\r\n');
                 socket.destroy();
             }
+            
         });
     }
     catch(err){
