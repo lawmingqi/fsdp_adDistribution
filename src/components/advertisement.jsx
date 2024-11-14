@@ -11,6 +11,7 @@ const AdvertisementDisplay = () => {
   const [selectedAd, setSelectedAd] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [displayedAd, setDisplayedAd] = useState(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   useEffect(() => {
     fetchAds();
@@ -58,6 +59,30 @@ const AdvertisementDisplay = () => {
     setIsModalOpen(false);
   };
 
+  const handleFullscreen = () => {
+    setIsFullscreen(true);
+  };
+
+  const handleCloseFullscreen = () => {
+    setIsFullscreen(false);
+  };
+
+  // Render only the ad in fullscreen if isFullscreen is true
+  if (isFullscreen && displayedAd) {
+    return (
+      <div className="fullscreen-ad-container">
+        {displayedAd.startsWith("http") ? (
+          <img src={displayedAd} alt="Fullscreen Ad" className="fullscreen-ad" />
+        ) : (
+          <p>Unsupported file type</p>
+        )}
+        <button onClick={handleCloseFullscreen} className="close-fullscreen-btn">
+          Close Fullscreen
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="advertisement-display-container">
       <Navbar />
@@ -83,6 +108,9 @@ const AdvertisementDisplay = () => {
           ) : (
             <p>Unsupported file type</p>
           )}
+          <button onClick={handleFullscreen} className="fullscreen-btn">
+            Fullscreen
+          </button>
         </div>
       )}
 
