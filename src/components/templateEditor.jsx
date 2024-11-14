@@ -91,25 +91,55 @@ const TemplateEditor = () => {
       const reader = new FileReader();
   
       reader.onload = (readerEvent) => {
-        const img = new Image();
+        const fileType = file.type;
         
-        img.onload = () => {
-          const fabricImage = new FabricImage(img, {
-            left: 100,
-            top: 100,
-            angle: 0,
-            opacity: 1,
-          });
-          canvas.current.add(fabricImage);
-        };
+        if (fileType === "image/gif") {
+          const gifElement = document.createElement("img");
+          gifElement.src = readerEvent.target.result;
+        
+          gifElement.onload = () => {
+            const canvasElement = canvas.current;
+            const fabricGif = new FabricImage(gifElement, {
+              left: 100,
+              top: 100, 
+              selectable: true,
+              hasControls: true,
+            });
+
+            canvasElement.add(fabricGif);
+
+            const updateGIFFrame = () => {
+              canvasElement.requestRenderAll(); 
+              requestAnimationFrame(updateGIFFrame); 
+            };
   
-        img.onerror = (err) => {
-          console.error("Error loading image: ", err);
-        };
-  
-        img.src = readerEvent.target.result;
+            updateGIFFrame();
+
+            gifElement.onerror = (err) => {
+              console.error("Error loading GIF: ", err);
+            };
+          };
+        } 
+        else {
+          const img = new Image();
+          img.onload = () => {
+            const fabricImage = new FabricImage(img, {
+              left: 100,
+              top: 100,
+              angle: 0,
+              opacity: 1,
+            });
+            canvas.current.add(fabricImage);
+          };
+    
+          img.onerror = (err) => {
+            console.error("Error loading image: ", err);
+          };
+    
+          img.src = readerEvent.target.result;
+        }
       };
-  
+    
       reader.onerror = (err) => {
         console.error("Error reading file: ", err);
       };
@@ -425,7 +455,7 @@ const setCanvasBackgroundColor = (color) => {
             id="image-upload" 
             type="file" 
             onChange={handleImageUpload} 
-            accept="image/*" 
+            accept="image/gif, image/jpeg, image/jpg, image/png" 
             style={{ display: 'none' }}
           />
         </div>
