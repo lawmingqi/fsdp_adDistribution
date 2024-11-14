@@ -1,15 +1,15 @@
-import React, { useState, useEffect } from 'react';
-import '../styles/Advert.css';
-import logo from '../assets/githubbies-logo.jpg'
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import "../styles/Advert.css";
+import Navbar from "./navbar";
 
 const FileUpload = () => {
-  // file is the file object that is passed in then setFile the function used to update the state of the file object 
   const [file, setFile] = useState(null);
-  // Pass the data retrieved into an array
   const [fileList, setFileList] = useState([]);
   const [previewUrl, setPreviewUrl] = useState(null);
+  const [fileType, setFileType] = useState(null);
+  const [fileName, setFileName] = useState("");
   const [loading, setLoading] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     fetchFiles();
@@ -17,7 +17,7 @@ const FileUpload = () => {
 
   const fetchFiles = async () => {
     try {
-      const response = await fetch('/api/files');
+      const response = await fetch("/api/files");
       const data = await response.json();
       setFileList(data);
     } catch (error) {
@@ -27,48 +27,47 @@ const FileUpload = () => {
 
   const handleFileChange = (event) => {
     const selectedFile = event.target.files[0];
-    // Shows the live preview of the file when it changes
-    setFile(selectedFile);
     if (selectedFile) {
+      setFile(selectedFile);
       setPreviewUrl(URL.createObjectURL(selectedFile));
+      setFileType(selectedFile.type.startsWith("image") ? "image" : "video");
+      setFileName(selectedFile.name);
     } else {
+      setFile(null);
       setPreviewUrl(null);
+      setFileType(null);
+      setFileName("");
     }
   };
 
   const uploadFile = async () => {
     if (!file) {
-      alert('No file selected');
+      alert("No file selected");
       return;
     }
 
     setLoading(true);
     try {
-      const response = await fetch('/api/generate-presigned-url', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ FileName: file.name, FileType: file.type }),
+      const response = await fetch("/api/generate-presigned-url", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ FileName: fileName, FileType: file.type }),
       });
 
       const { url, key } = await response.json();
 
-      console.log("Generated URL:", url);
-      console.log("DynamoDB key for s3 object: ",key)
-
-      // Need to store this key in s3 as well
-
       await fetch(url, {
-        method: 'PUT',
-        headers: { 'Content-Type': file.type },
+        method: "PUT",
+        headers: { "Content-Type": file.type },
         body: file,
       });
 
-      await fetch('/api/upload-file', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      await fetch("/api/upload-file", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           FileId: key,
-          FileName: file.name,
+          FileName: fileName,
           FileSize: file.size,
           FileType: file.type,
           FileUrl: key,
@@ -78,6 +77,9 @@ const FileUpload = () => {
       fetchFiles();
       setFile(null);
       setPreviewUrl(null);
+      setFileType(null);
+      setFileName("");
+      setIsModalOpen(false);
     } catch (error) {
       console.error("Error uploading file:", error);
     }
@@ -85,56 +87,91 @@ const FileUpload = () => {
   };
 
   const deleteFile = async (fileKey) => {
-    console.log("Deleting file with key:", fileKey);
     try {
-      await fetch(`/api/delete-file/${fileKey}`, { method: 'DELETE' });
+      await fetch(`/api/delete-file/${fileKey}`, { method: "DELETE" });
       fetchFiles();
     } catch (error) {
       console.error("Error deleting file:", error);
     }
   };
 
+  const handleDisplay = (fileKey) => {
+    const selectedTV = prompt("Enter the TV ID to display this ad:");
+    if (selectedTV) {
+      fetch(`http://localhost:5000/api/advertisement/display`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ adID: fileKey, tvID: selectedTV }),
+      })
+        .then((response) => response.json())
+        .then((data) => console.log(data))
+        .catch((error) => console.error("Error displaying ad:", error));
+    }
+  };
+
   return (
     <div className="file-upload-container">
-      <nav className="navbar">
-                <div className="navbar-logo">
-                    <img src={logo} alt="Logo" />
-                </div>
-                <ul className="navbar-links">
-                    <li><Link to="/">Dashboard</Link></li>
-                    <li><Link to="/file-management">File Management</Link></li>
-                    <li><Link to="/template-editor">Template Editor</Link></li>
-                    <li><Link to="/media-management">Media Management</Link></li>
-                </ul>
-            </nav>
-            <div className="top-bar">
-            <h2 className="editor-title">File Management</h2>
-          </div>
-      <h2>Upload File</h2>
-      <input type="file" onChange={handleFileChange} />
-      {previewUrl && (
-        <div className="preview-container">
-          <p>Image Preview:</p>
-          <img src={previewUrl} alt="Preview" />
-        </div>
-      )}
-      <button onClick={uploadFile} disabled={loading}>
-        {loading ? 'Uploading...' : 'Upload'}
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.4.1/font/bootstrap-icons.min.css"></link>
+      <Navbar />
+      <div className="top-bar">
+        <h2 className="editor-title">Advertisement</h2>
+      </div>
+
+      <button onClick={() => setIsModalOpen(true)} className="upload-btn">
+        Upload File
       </button>
 
-      <h2>Uploaded Files</h2>
+      {isModalOpen && (
+        <div className="modal">
+          <div className="modal-content">
+            <h3>Select a File to Upload</h3>
+            <input type="file" onChange={handleFileChange} accept="image/*,video/*" />
+            {previewUrl && (
+              <div className="preview-container">
+                <p>Preview:</p>
+                {fileType === "image" ? (
+                  <img src={previewUrl} alt="Preview" />
+                ) : (
+                  <video src={previewUrl} controls />
+                )}
+              </div>
+            )}
+            <div className="file-name-edit">
+              <label>File Name:</label>
+              <input
+                type="text"
+                value={fileName}
+                onChange={(e) => setFileName(e.target.value)}
+              />
+            </div>
+            <button onClick={uploadFile} disabled={loading} className="upload">
+              {loading ? "Uploading..." : "Upload"}
+            </button>
+            <button onClick={() => setIsModalOpen(false)} className="cancel">
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
+      <h2>Uploaded Advertisements</h2>
       <div className="file-list">
         {fileList.map((file) => (
           <div key={file.FileId} className="file-item">
-            <a
-              href={file.FileUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <img src={file.FileUrl} alt={file.FileName} />
-            </a>
-            <p>{file.FileName}</p>
-            <button onClick={() => deleteFile(file.FileId)}>Delete</button>
+            {file.FileType.startsWith("image") ? (
+              <img src={file.FileUrl} alt={file.FileName} className="file-content" />
+            ) : (
+              <video src={file.FileUrl} controls className="file-content" />
+            )}
+            <p className="file-name">{file.FileName}</p>
+            <div className="file-footer">
+              <button onClick={() => deleteFile(file.FileId)} className="delete-btn">
+                <i className="bi bi-trash3"></i> 
+              </button>
+              <button onClick={() => handleDisplay(file.FileId)} className="display-btn">
+                <i className="bi bi-display"></i> 
+              </button>
+            </div>
           </div>
         ))}
       </div>
