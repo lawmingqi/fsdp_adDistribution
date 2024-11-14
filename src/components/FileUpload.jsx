@@ -166,7 +166,7 @@ const FileUpload = () => {
             <p className="file-name">{file.FileName}</p>
             <div className="file-footer">
               <button onClick={() => deleteFile(file.FileId)} className="delete-btn">
-                <i className="bi bi-trash3"></i> 
+                <i class="bi bi-trash"></i>
               </button>
               <button onClick={() => handleDisplay(file.FileId)} className="display-btn">
                 <i className="bi bi-display"></i> 

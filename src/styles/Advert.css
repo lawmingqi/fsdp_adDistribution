@@ -186,20 +186,21 @@ ul {
 
 
 .file-footer button {
+  width: 55px; 
+  height: 55px;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 8px;
   border: none;
-  border-radius: 4px;
+  border-radius: 50%;
   cursor: pointer;
 }
 
 .file-footer .delete-btn,
 .file-footer .display-btn {
   color: white;
-  width: 40px; 
-  height: 40px; 
+  font-size: 1.3em;
   border-radius: 50%; 
   display: flex;
   align-items: center;
