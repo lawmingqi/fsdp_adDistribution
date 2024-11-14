@@ -255,6 +255,8 @@ app.post("/api/upload-file", upload.single("file"), (req, res) => {
   }
 
   const fileUrl = `http://localhost:${PORT}/uploads/${file.filename}`;
+  // need get the presigned url
+  
 
   io.to(tv).emit("receive_message", { message: fileUrl, tv });
 
