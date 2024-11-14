@@ -1,0 +1,27 @@
+input,
+button {
+  padding: 10px;
+  font-size: 16px;
+  border-radius: 5px;
+  border: 1px solid #ddd;
+}
+
+.AdvertisementDisplay input {
+  margin-right: 10px;
+}
+
+.AdvertisementDisplay button {
+  cursor: pointer;
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  font-size: 16px;
+}
+
+.AdvertisementPreviewContainer img,
+.AdvertisementPreviewContainer video {
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  margin-top: 20px;
+}

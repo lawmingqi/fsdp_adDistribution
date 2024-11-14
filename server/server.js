@@ -2,11 +2,14 @@ const express = require("express");
 const advertisementController = require("./AdvertisementController");
 const cors = require("cors");
 const { dynamoDb } = require("./awsConfig");
-// const ws = require("ws"); 
+// const ws = require("ws");
 // const WebSocketClient = require("./WebsocketClient");
 const { Server } = require("socket.io");
 const http = require("http");
 const dotenv = require("dotenv");
+const path = require("path");
+const multer = require("multer");
+
 const {
   S3Client,
   PutObjectCommand,
@@ -49,7 +52,7 @@ io.on("connection", (socket) => {
   console.log(`User Connected: ${socket.id}`);
 
   socket.on("join_tv", (tv) => {
-    socket.join(tv); 
+    socket.join(tv);
     console.log(`User ${socket.id} joined TV room: ${tv}`);
   });
 
@@ -187,12 +190,41 @@ app.get("/getAds", advertisementController.retrieveAllAdvertisements);
 app.post("/pushAdsToTv/:adID", advertisementController.pushTvAdvertisement);
 app.delete("/deleteAd/:adID", advertisementController.deleteAd);
 
-// Commented out WebSocket setup for now
 // WebSocketClient.setupWebSocketServer(server);
+
+// to handle file upload
+
+// Configure multer for file storage
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, path.join(__dirname, "uploads")); // Save files in the 'uploads' folder
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + path.extname(file.originalname)); // Unique filename with timestamp
+  },
+});
+
+const upload = multer({ storage });
+
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
+app.post("/api/upload-file", upload.single("file"), (req, res) => {
+  const { tv } = req.body;
+  const file = req.file;
+
+  if (!file) {
+    return res.status(400).json({ message: "No file uploaded" });
+  }
+
+  const fileUrl = `http://localhost:${PORT}/uploads/${file.filename}`;
+
+  io.to(tv).emit("receive_message", { message: fileUrl, tv });
+
+  res.status(200).json({ fileUrl });
+});
 
 server.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
-
 
 console.log("Socket.io server listening on port 5000");
