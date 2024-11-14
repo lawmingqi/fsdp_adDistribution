@@ -208,7 +208,7 @@ const TemplateEditor = () => {
     }
   };
   
-  /*const handleSaveTemplateAsImage = () => {
+  const handleSaveTemplateAsImage = () => {
 
     const templateData = canvas.current.toJSON(['backgroundColor']);
     console.log('Template Data:', templateData);
@@ -254,56 +254,11 @@ const TemplateEditor = () => {
     setTimeout(() => {
       mediaRecorder.stop();
     },5000);
-  };*/
+  };
 
-  // save template functionality
+
+
   const handleSaveTemplate = () => {
-    // Prepare the template metadata
-    const templateId = "template123"; // This can be dynamically generated
-    const objects = canvas.current.getObjects(); // Get all objects on canvas
-    const metadata = objects.map((obj, index) => {
-        // Extract the properties of each object
-        const properties = {
-            templateId: templateId,  // Link to the template
-            objectId: `object${index}`, // Unique ID for each object
-            type: obj.type,  // Type of the object (rect, circle, image, text)
-            left: obj.left,
-            top: obj.top,
-            width: obj.width,
-            height: obj.height,
-            fill: obj.fill || null, // Color or properties of the object
-            angle: obj.angle,
-            fontSize: obj.fontSize || null, // Text objects
-            fontFamily: obj.fontFamily || null, // Text objects
-            opacity: obj.opacity || 1,  // Optional, in case of images or videos
-        };
-        return properties;
-    });
-
-    // Save to DynamoDB (backend will handle this part)
-    saveTemplateMetadataToDynamoDB(metadata);
-};
-
-const saveTemplateMetadataToDynamoDB = async (metadata) => {
-  try {
-    const response = await fetch('/api/save-template-metadata', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ metadata }),
-    });
-    
-    const data = await response.json();
-    console.log('Server Response:', data);
-  } catch (error) {
-    console.error('Error saving template metadata:', error);
-  }
-};
-
-
-
-  /*const handleSaveTemplate = () => {
     //handleSaveTemplateAsJSON();
     const videoObjects = canvas.current.getObjects().filter(obj => obj.type === 'image' && obj.getElement().tagName ==='VIDEO');
 
@@ -312,7 +267,7 @@ const saveTemplateMetadataToDynamoDB = async (metadata) => {
     } else{
       handleSaveTemplateAsImage();
     }
-  };*/
+  };
 
   // const handleSaveTemplateAsJSON = () => {
   //   const canvasJSON = canvas.current.toJSON();
