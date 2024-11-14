@@ -1,18 +1,3 @@
-<<<<<<< HEAD
-const express = require('express');
-const advertisementController = require('./AdvertisementController');
-const cors = require('cors');
-const { dynamoDb } = require('./awsConfig');
-const ws = require("ws");
-const { createProxyMiddleware } = require('http-proxy-middleware');
-const WebSocketClient =  require('./WebsocketClient');
-const http = require('http');
-const dotenv = require('dotenv');
-const { S3Client, PutObjectCommand, DeleteObjectCommand, GetObjectCommand} = require('@aws-sdk/client-s3');
-const { ScanCommand, PutCommand, DeleteCommand, GetCommand } = require('@aws-sdk/lib-dynamodb');
-const { v4: uuidv4 } = require('uuid');
-const { getSignedUrl } = require('@aws-sdk/s3-request-presigner');
-=======
 const express = require("express");
 const advertisementController = require("./AdvertisementController");
 const cors = require("cors");
@@ -32,10 +17,10 @@ const {
   ScanCommand,
   PutCommand,
   DeleteCommand,
+  GetCommand,
 } = require("@aws-sdk/lib-dynamodb");
 const { v4: uuidv4 } = require("uuid");
 const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
->>>>>>> a89337572223796ac8cf939de38cdd9392bc7ded
 
 dotenv.config();
 
@@ -122,7 +107,6 @@ app.get("/api/files", async (req, res) => {
   }
 });
 
-<<<<<<< HEAD
 
 app.get('/api/getfiles/:fileID', async (req,res) => {
   try{
@@ -159,17 +143,10 @@ app.get('/api/getfiles/:fileID', async (req,res) => {
   }
 })
 
-// upload the advertisement to DynamoDB
-app.put('/create/advertisements', async (req,res) => {
-  // Destructure the properties of the request body
-  const {templateId,Status,templateType,TemplateUrl} = req.body;
-  try{
-=======
 // Upload advertisement metadata to DynamoDB
 app.put("/create/advertisements", async (req, res) => {
   const { templateId, Status, templateType, TemplateUrl } = req.body;
   try {
->>>>>>> a89337572223796ac8cf939de38cdd9392bc7ded
     const params = {
       TableName: AdTemplates,
       Item: {
@@ -242,42 +219,23 @@ app.delete("/api/delete-file/:fileKey", async (req, res) => {
 
 // Routes for advertisements
 app.post("/createAds", advertisementController.createAd);
+app.get('/getAdID:/FileId',advertisementController.retrieveAdID)
 app.put("/addTvs", advertisementController.addTv);
 app.get("/getAds", advertisementController.retrieveAllAdvertisements);
 app.post("/pushAdsToTv/:adID", advertisementController.pushTvAdvertisement);
 app.delete("/deleteAd/:adID", advertisementController.deleteAd);
 
-<<<<<<< HEAD
-// Route for advertisements (post, get and delete all works)
-
-app.post('/createAds',advertisementController.createAd);
-app.get('/getAdID:/FileId',advertisementController.retrieveAdID)
-app.put('/addTvs',advertisementController.addTv);
-app.get('/getAds', advertisementController.retrieveAllAdvertisements);
-app.post('/pushAdsToTv/:adID',advertisementController.pushTvAdvertisement);
-app.delete('/deleteAd/:adID', advertisementController.deleteAd);
-WebSocketClient.setupWebSocketServer(server);
-
-
-app.listen(PORT, 'localhost', () => {
-  console.log(`Server running on port ${PORT}`);
-});
-=======
 // Commented out WebSocket setup for now
 // WebSocketClient.setupWebSocketServer(server);
->>>>>>> a89337572223796ac8cf939de38cdd9392bc7ded
+
 
 
 
 server.listen(PORT, () => {
-<<<<<<< HEAD
   console.log(`WebSocket Server running on port ${PORT}`);
 })
 
-=======
-  console.log(`Server is running on port ${PORT}`);
-});
+
 
 
 console.log("Socket.io server listening on port 5000");
->>>>>>> a89337572223796ac8cf939de38cdd9392bc7ded
