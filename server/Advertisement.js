@@ -1,5 +1,5 @@
 const { dynamoDb } = require('./awsConfig');
-const { ScanCommand, PutCommand, DeleteCommand, UpdateCommand } = require('@aws-sdk/lib-dynamodb');
+const { ScanCommand, PutCommand, DeleteCommand, UpdateCommand, GetCommand } = require('@aws-sdk/lib-dynamodb');
 class Advertisement{
     // constructor for advertisements 
     constructor(adID,adTitle,adContent,adType,uploadDate,assignedTvs){
@@ -49,6 +49,7 @@ class Advertisement{
     }
 
     static async addTv(tvID,adID){
+        console.log(tvID);
         const params = {
             // So now basically add the tvIDs to the assignedTvs array
             TableName: "Advertisement",
@@ -83,6 +84,33 @@ class Advertisement{
         try{
             const data = await dynamoDb.send(new ScanCommand(params));
             return data;
+        }
+
+        catch(err){
+            console.error(err);
+            return null
+        }
+    }
+
+    static async retireveAd(adID){
+        console.log(adID);
+        const params = {
+            TableName: "Advertisement",
+            Key:{
+                "adID" : adID
+            }
+            
+        }
+
+        try{
+            const data = await dynamoDb.send(new GetCommand(params));
+            if (data) {
+                console.log("Item found:", data);
+                return data.Item; // Return the item if found
+            } else {
+                console.log("Item not found for adID:", adID);
+                return null;
+            }
         }
 
         catch(err){

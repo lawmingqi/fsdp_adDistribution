@@ -2,8 +2,8 @@ const express = require('express');
 const advertisementController = require('./AdvertisementController');
 const cors = require('cors');
 const { dynamoDb } = require('./awsConfig');
-const websSocketClient = require('../server/WebsocketClient')
 const ws = require("ws");
+const WebSocketClient =  require('./WebsocketClient');
 const http = require('http');
 const dotenv = require('dotenv');
 const { S3Client, PutObjectCommand, DeleteObjectCommand, GetObjectCommand} = require('@aws-sdk/client-s3');
@@ -178,10 +178,10 @@ const server = http.createServer(app);
 
 app.post('/createAds',advertisementController.createAd);
 app.put('/addTvs',advertisementController.addTv);
-app.get('/getAds', advertisementController.retrieveAllAdvertisments);
-app.post('/pushAdsToTv',advertisementController.pushTvAdvertisement);
+app.get('/getAds', advertisementController.retrieveAllAdvertisements);
+app.post('/pushAdsToTv/:adID',advertisementController.pushTvAdvertisement);
 app.delete('/deleteAd/:adID', advertisementController.deleteAd);
-websSocketClient.setupWebSocketServer(server);
+WebSocketClient.setupWebSocketServer(server);
 
 app.listen(PORT, 'localhost', () => {
   console.log(`Server running on port ${PORT}`);

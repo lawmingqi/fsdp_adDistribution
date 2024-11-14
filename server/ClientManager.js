@@ -14,7 +14,7 @@ class ClientManager{
 
     getClient(client_id){
         this.clientList.forEach((client)=>{
-            if(client.user_id === user_id){
+            if(client.client_id === client_id){
                 return client.ws;
             }
         })

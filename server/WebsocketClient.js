@@ -63,33 +63,37 @@ const onConnect = function(ws, req){
         }
         else{
             const data = {
-                "user_id" : user_id,
+                "client_id" : user_id,
                 "ws" : ws
             }
             wsClient.saveClient(data);
-            sendToAllUsersConnected();
         }
     });
 }
 
-const sendToAllUsersConnected = function(){
+const sendUsersConnected = function(tvList,ads){
     const wsList = wsClient.getClientList();
-    let count = 0;
-    wsList.forEach((wsClientObj) => {
-        count = count + 1;
-        console.log(wsClientObj.user_id);
-        const ws = wsClientObj.ws;
-        ws.send(`Connected to the websocket user id ${wsClientObj.user_id}: `);
-    })
+    console.log("This is tvList: ",tvList);
+    console.log(wsList);
+    const data = {
+        "adContent" : ads.adContent,
+        "uploadedDate" : new Date().toISOString
+    }
+    wsList.forEach((client) => {
+       const client_id = client.client_id;
+       console.log("This is client_id: ", client_id);
+       tvList.forEach((tv) => {
+            if(tv == client_id){
+                console.log("tv found");
+                client.ws.send(JSON.stringify(data));
+            }
+        });
+    });
 
-    console.log(count);
-    
-    
-    
 }
 // remove the connected client from the websocket 
 
 module.exports = {
     setupWebSocketServer,
-    wsClient
+    sendUsersConnected,
 };
