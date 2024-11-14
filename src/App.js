@@ -3,6 +3,9 @@ import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import TemplateEditor from './components/templateEditor';
 import FileUpload from './components/FileUpload';
+import TemplatePage from './components/templatePage';
+import ViewAllTemplates from "./components/viewAllTemplates";
+
 import Home from './components/home';
 
 const App = () => {
@@ -10,8 +13,10 @@ const App = () => {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/template-editor" element={<TemplateEditor />} />
+        <Route path="/manage-templates" element={<TemplatePage />} />
+        <Route path="/manage-templates/view-all" element={<ViewAllTemplates />} />
         <Route path="/file-management" element={<FileUpload />} />
+        <Route path="/template-editor" element={<TemplateEditor/>} />
         {/* Default route for undefined paths */}
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>

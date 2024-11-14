@@ -6,30 +6,44 @@ const ClientManager = require('./ClientManager');
 // Have to pass the instance of clientManaget from the websocket 
 const wsClient = new ClientManager();
 
+// Allowed origins 
+const allowedOrigin = 'localhost:5000'
 // Adding clients to the websocket 
 const setupWebSocketServer = function(server) {
+    // fo not upgrade to the server automatically
+    const wss = new WebSocket.Server({ noServer: true });
     // Initialize the WebSocket server
-    const wss = new WebSocket.Server({ server, path: '/ws' });
-
-    wss.on('connection', (ws,req) => {
-        // recieve the message from the client after client is authenticated 
-        ws.on('message', (message) => {
-            const data = JSON.parse(message);
-            const user_id = data.user_id;
-            if(user_id == null) {
-                ws.close();
-                return;
+    try{
+        server.on('upgrade', (req, socket, head) => {
+            // Check the req 
+            console.log(req);
+            console.log('Upgrade request received');
+            // Check the request header for the websocket (Handle the upgrade process)
+            // Ensure all requests headers are for websocket connections
+            const headers = req.headers;
+            console.log(headers);
+            if (!req.headers.connection === "Upgrade" || req.headers.upgrade.toLowerCase() != 'websocket'){
+                console.log('Invalid request headers');
+                socket.write('HTTP/1.1 400 Bad Request\r\n\r\n');
+                socket.destroy();
             }
-            else{
-                const data = {
-                    "user_id" : user_id,
-                    "ws" : ws
-                }
-                wsClient.saveClient(data);
-                sendToAllUsersConnected();
+            if(headers.host == allowedOrigin) {
+                console.log('Origin is allowed');
+                wss.handleUpgrade(req, socket, head, (ws) => {
+                    wss.emit('connection', ws, req);
+                    onConnect(ws, req);
+                });
+            }
+            else {
+                socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n');
+                socket.destroy();
             }
         });
-    })
+    }
+    catch(err){
+        console.log(err);
+    }
+    
 
     // Add the message retrieved from the client to client list 
 };
@@ -37,6 +51,25 @@ const setupWebSocketServer = function(server) {
 const closeConnection = function(wsClient, user_id) {
     const ws = wsClient.getClient(user_id)
     ws.close();
+}
+
+const onConnect = function(ws, req){
+    ws.on('message', (message) => {
+        const data = JSON.parse(message);
+        const user_id = data.user_id;
+        if(user_id == null) {
+            ws.close();
+            return;
+        }
+        else{
+            const data = {
+                "user_id" : user_id,
+                "ws" : ws
+            }
+            wsClient.saveClient(data);
+            sendToAllUsersConnected();
+        }
+    });
 }
 
 const sendToAllUsersConnected = function(){

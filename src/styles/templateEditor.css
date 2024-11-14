@@ -1,24 +1,25 @@
 .template-editor-container {
+  font-family: "Space Mono", monospace;
   display: flex;
   height: 100vh;
   position: relative;
 }
 
 .sidebar {
-  width: 45px;
-  height: 70%;
+  margin-top: 8%;
+  width: 50px;
+  height: 65%;
   background-color: #a3a3a3;
   display: flex;
   flex-direction: column;
   align-items: center;
-  position: relative;
-  top: 45%; 
+  position: absolute;
+  top: 50%;
   left: 100px;
   transform: translateY(-50%);
   z-index: 1;
   border-radius: 10px;
-  justify-content: center; 
- 
+  justify-content: flex-start;
 }
 
 .sidebar-item {
@@ -28,8 +29,10 @@
 }
 
 .main-content {
+  margin-top: -20px;
   flex-grow: 1;
-  padding: 20px;
+  margin-left: 75px;
+  margin-bottom: 55px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -65,35 +68,36 @@
 }
 
 .editor-title {
-  font-size: 34px;
+  text-align: center;
+  font-size: 23px;
   font-weight: bold;
-  margin-bottom: 3em;
+  color: #333;
 }
 
 canvas {
   border: 1px solid #ccc;
-  margin-top: 20px;
+  margin-top: 30px;
 }
 
 .tools {
   margin-top: 20px;
 }
 
-#bg-color{
+#bg-color {
   z-index: 1000;
 }
 
-#tooltip{
+#tooltip {
   position: relative;
   cursor: pointer;
   border-bottom: 2px;
   padding: 7px;
 }
 
-#tooltipText{
+#tooltipText {
   position: absolute;
   left: 50%;
-  top:0;
+  top: 0;
   transform: translateX(-50%);
   background-color: #000;
   color: #fff;
@@ -105,7 +109,7 @@ canvas {
   transition: opacity 0.5s ease;
 }
 
-#tooltipText::before{
+#tooltipText::before {
   content: "";
   position: absolute;
   left: 50%;
@@ -115,8 +119,24 @@ canvas {
   border-color: #000 #0000 #0000 #0000;
 }
 
-#tooltip:hover #tooltipText{
+#tooltip:hover #tooltipText {
   top: -50%;
   visibility: visible;
   opacity: 1;
+}
+
+.breadcrumb {
+  font-size: 14px;
+  color: #b0b0b0;
+  margin-left: 20px;
+  margin-top: 30px;
+}
+
+.breadcrumb a {
+  text-decoration: none;
+  color: #007bff;
+}
+
+.breadcrumb-link:hover {
+  text-decoration: underline;
 }
