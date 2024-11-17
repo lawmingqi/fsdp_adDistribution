@@ -3,7 +3,7 @@ import io from "socket.io-client";
 import "../styles/Advert.css";
 import Navbar from "./navbar";
 
-const socket = io.connect("http://10.1.123.138:3000"); // Adjust to your backend URL
+const socket = io.connect("http://localhost:5000"); // Adjust to your backend URL
 
 const AdvertisementDisplay = () => {
   const [ads, setAds] = useState([]);
