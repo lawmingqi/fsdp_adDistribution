@@ -3,7 +3,7 @@ import io from "socket.io-client";
 import "../styles/Advert.css";
 import Navbar from "./navbar";
 
-const socket = io.connect("http://localhost:5000"); // Adjust to your backend URL
+const socket = io.connect("https://fsdp-addistribution.onrender.com"); // Adjust to your backend URL
 
 const AdvertisementDisplay = () => {
   const [ads, setAds] = useState([]);
@@ -28,7 +28,7 @@ const AdvertisementDisplay = () => {
 
   const fetchAds = async () => {
     try {
-      const response = await fetch("/getAds");
+      const response = await fetch("https://fsdp-addistribution.onrender.com/getAds");
       const data = await response.json();
       setAds(data);
     } catch (error) {
