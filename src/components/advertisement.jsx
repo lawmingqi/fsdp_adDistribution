@@ -28,7 +28,7 @@ const AdvertisementDisplay = () => {
 
   const fetchAds = async () => {
     try {
-      const response = await fetch("https://fsdp-addistribution.onrender.com/getAds");
+      const response = await fetch("https://fsdp-addistribution-frontend.onrender.com/getAds");
       const data = await response.json();
       setAds(data);
     } catch (error) {
