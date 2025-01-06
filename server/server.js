@@ -44,7 +44,7 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: "https://fsdp-addistribution.onrender.com",
+    origin: "https://fsdp-addistribution-frontend.onrender.com",
     methods: ["GET", "POST"],
   },
 });
@@ -255,7 +255,7 @@ app.post("/api/upload-file", upload.single("file"), (req, res) => {
     return res.status(400).json({ message: "No file uploaded" });
   }
 
-  const fileUrl = `https://fsdp-addistribution-frontend.onrender.com/uploads/${file.filename}`;
+  const fileUrl = `http://localhost:${PORT}/uploads/${file.filename}`;
   // need get the presigned url
   
 
@@ -267,7 +267,7 @@ app.post("/api/upload-file", upload.single("file"), (req, res) => {
 
 
 
-server.listen(`https://fsdp-addistribution.onrender.com`, () => {
+server.listen(PORT, () => {
   console.log(`WebSocket Server running on port ${PORT}`);
 })
 
