@@ -44,7 +44,7 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: "https://fsdp-addistribution.onrender.com",
+    origin: "https://fsdp-addistribution-frontend.onrender.com",
     methods: ["GET", "POST"],
   },
 });
