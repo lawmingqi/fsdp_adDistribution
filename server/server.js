@@ -44,7 +44,7 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: "https://fsdp-addistribution-frontend.onrender.com",
+    origin: "https://fsdp-addistribution.onrender.com",
     methods: ["GET", "POST"],
   },
 });
@@ -111,7 +111,6 @@ app.get("/api/files", async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 });
-
 
 app.get('/api/getfiles/:fileID', async (req,res) => {
   try{
