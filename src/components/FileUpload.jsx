@@ -136,7 +136,7 @@ const FileUpload = () => {
     const selectedTV = prompt("Enter the TV ID to display this ad:");
     try{
       if (selectedTV) {
-        const socket = new WebSocket("ws://https://fsdp-addistribution.onrender.com");
+        const socket = new WebSocket("ws://https://fsdp-addistribution-frontend.onrender.com");
         if(!socket){
           
         }
