@@ -117,15 +117,17 @@ const FileUpload = () => {
         method: "GET",
         headers: { "Content-Type": "application/json" },
       })
+
+      const fileIDJson = await fileID.json(); // convert response to JSON
       console.log(fileID.json());
       if(fileID.status === 200){
-        const adID = await fileID.json();
+        const adID = fileIDJson.adID;
         console.log(adID);
         await fetch(`${process.env.REACT_APP_BASE_URL}/deleteAd/${adID}`,{
           method: "DELETE",
         });
       }
-      await fetch(`${process.env.REACT_APP_BASE_URL}deleteAd/${fileKey}`, { method: "DELETE" });
+      await fetch(`${process.env.REACT_APP_BASE_URL}/deleteAd/${fileKey}`, { method: "DELETE" });
       fetchFiles();
     } catch (error) {
       console.error("Error deleting file:", error);
