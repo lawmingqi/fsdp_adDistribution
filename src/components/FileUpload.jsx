@@ -16,7 +16,7 @@ const FileUpload = () => {
 
   const fetchFiles = async () => {
     try {
-      const response = await fetch(`${process.env.REACT_APP_BASE_URL}/api/files`);
+      const response = await fetch("https://fsdp-addistribution.onrender.com/api/files");
       const data = await response.json();
       console.log(data);
       setFileList(data);
@@ -48,7 +48,7 @@ const FileUpload = () => {
 
     setLoading(true);
     try {
-      const response = await fetch(`${process.env.REACT_APP_BASE_URL}/api/generate-presigned-url`, {
+      const response = await fetch("/api/generate-presigned-url", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ FileName: fileName, FileType: file.type }),
@@ -62,7 +62,7 @@ const FileUpload = () => {
         body: file,
       });
 
-      await fetch(`${process.env.REACT_APP_BASE_URL}/api/upload-file`, {
+      await fetch("/api/upload-file", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -74,14 +74,14 @@ const FileUpload = () => {
         }),
       });
       
-      const uploadedFile = await fetch(`${process.env.REACT_APP_BASE_URL}/api/getfiles/${key}`, {
+      const uploadedFile = await fetch(`/api/getfiles/${key}`, {
         method: "GET",
         headers: { "Content-Type": "application/json" },
       })
 
       if(uploadedFile.status === 200){
         const fileData = await uploadedFile.json();
-        await fetch(`${process.env.REACT_APP_BASE_URL}/createAds`, {
+        await fetch("/createAds", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -111,7 +111,7 @@ const FileUpload = () => {
 
   const deleteFile = async (fileKey) => {
     try {
-      await fetch(`${process.env.REACT_APP_BASE_URL}/api/delete-file/${fileKey}`, { method: "DELETE" });
+      await fetch(`/api/delete-file/${fileKey}`, { method: "DELETE" });
       // call another thing to get the ad id
       const fileID = await fetch(`/getAdID/${fileKey}`,{
         method: "GET",
@@ -121,11 +121,11 @@ const FileUpload = () => {
       if(fileID.status === 200){
         const adID = await fileID.json();
         console.log(adID);
-        await fetch(`${process.env.REACT_APP_BASE_URL}/deleteAd/${adID}`,{
+        await fetch(`/deleteAd/${adID}`,{
           method: "DELETE",
         });
       }
-      await fetch(`${process.env.REACT_APP_BASE_URL}deleteAd/${fileKey}`, { method: "DELETE" });
+      await fetch(`deleteAd/${fileKey}`, { method: "DELETE" });
       fetchFiles();
     } catch (error) {
       console.error("Error deleting file:", error);
