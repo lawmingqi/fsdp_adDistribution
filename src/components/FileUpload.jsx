@@ -16,7 +16,7 @@ const FileUpload = () => {
 
   const fetchFiles = async () => {
     try {
-      const response = await fetch("/api/files");
+      const response = await fetch("https://fsdp-addistribution.onrender.com/api/files");
       const data = await response.json();
       console.log(data);
       setFileList(data);
