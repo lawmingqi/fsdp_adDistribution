@@ -14,30 +14,26 @@ const AdvertisementDisplay = () => {
   const [isFullscreen, setIsFullscreen] = useState(false);
 
   useEffect(() => {
-    fetchAds();
+    fetchFiles();
 
     // Listen for the receive_message event to display the ad in real-time
     socket.on("receive_message", (data) => {
       setDisplayedAd(data.message); // The message should contain the file URL
     });
 
-    socket.on("file_update", () => {
-      fetchAds(); // Re-fetch ads when there's an update
-    });
-
     return () => {
       socket.off("receive_message");
-      socket.off("file_update");
     };
   }, []);
 
-  const fetchAds = async () => {
+  const fetchFiles = async () => {
     try {
-      const response = await fetch(`${process.env.REACT_APP_BASE_URL}/getAds`);
+      const response = await fetch(`${process.env.REACT_APP_BASE_URL}/api/files`);
       const data = await response.json();
-      setAds(data);
+      console.log(data);
+      setFileList(data);
     } catch (error) {
-      console.error("Error fetching ads:", error);
+      console.error("Error fetching files:", error);
     }
   };
 
