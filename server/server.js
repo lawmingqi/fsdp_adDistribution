@@ -39,15 +39,25 @@ const s3Client = new S3Client({
   },
 });
 
-app.use(cors());
+const allowedOrigins = [
+  "http://localhost:3000", // Local frontend
+  "https://fsdp-addistribution-frontend.onrender.com", // Deployed frontend
+];
+
+app.use(cors({
+  origin: allowedOrigins,
+  methods: ["GET", "POST", "PUT", "DELETE"],
+}));
+
 const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: "https://fsdp-addistribution-frontend.onrender.com",
+    origin: allowedOrigins,
     methods: ["GET", "POST"],
   },
 });
+
 
 io.on("connection", (socket) => {
   console.log(`User Connected: ${socket.id}`);
