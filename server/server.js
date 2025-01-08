@@ -233,7 +233,7 @@ app.delete("/api/delete-file/:fileKey", async (req, res) => {
 
 // Routes for advertisements
 app.post("/createAds", advertisementController.createAd);
-app.get('/getAdID:/FileId',advertisementController.retrieveAdID)
+app.get('/getAdID/:FileId',advertisementController.retrieveAdID)
 app.put("/addTvs", advertisementController.addTv);
 app.get("/getAds", advertisementController.retrieveAllAdvertisements);
 app.post("/pushAdsToTv/:adID", advertisementController.pushTvAdvertisement);
