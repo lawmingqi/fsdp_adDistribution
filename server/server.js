@@ -174,6 +174,7 @@ app.put("/create/advertisements", async (req, res) => {
     const command = new PutObjectCommand(params);
     await dynamoDb.send(command);
     console.log(`Template with ID ${templateId} added successfully`);
+    io.emit("file_update");
     res.status(200).send("Template uploaded successfully");
   } catch (error) {
     console.error(error);
@@ -199,6 +200,7 @@ app.post("/api/upload-file", async (req, res) => {
     const command = new PutCommand(params);
     await dynamoDb.send(command);
     console.log(`File ${FileName} metadata saved to DynamoDB`);
+    io.emit("file_update");
     res.status(200).json({ message: "File uploaded successfully" });
   } catch (error) {
     console.error("Error uploading file metadata to DynamoDB:", error);
@@ -223,7 +225,7 @@ app.delete("/api/delete-file/:fileKey", async (req, res) => {
     };
     await dynamoDb.send(new DeleteCommand(deleteDynamoParams));
     console.log(`File ${fileKey} deleted from DynamoDB`);
-
+    io.emit("file_update");
     res.status(200).json({ message: "File deleted successfully" });
   } catch (error) {
     console.error("Error deleting file from S3 and DynamoDB:", error);

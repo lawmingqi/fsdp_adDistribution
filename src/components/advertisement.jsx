@@ -21,14 +21,19 @@ const AdvertisementDisplay = () => {
       setDisplayedAd(data.message); // The message should contain the file URL
     });
 
+    socket.on("file_update", () => {
+      fetchAds(); // Re-fetch ads when there's an update
+    });
+
     return () => {
       socket.off("receive_message");
+      socket.off("file_update");
     };
   }, []);
 
   const fetchAds = async () => {
     try {
-      const response = await fetch("https://fsdp-addistribution.onrender.com/getAds");
+      const response = await fetch(`${process.env.REACT_APP_BASE_URL}/getAds`);
       const data = await response.json();
       setAds(data);
     } catch (error) {
