@@ -111,6 +111,8 @@ const FileUpload = () => {
 
   const deleteFile = async (fileKey) => {
     try {
+      setFileList(prevFileList => prevFileList.filter(file => file.FileId !== fileKey));
+
       await fetch(`${process.env.REACT_APP_BASE_URL}/api/delete-file/${fileKey}`, { method: "DELETE" });
       // call another thing to get the ad id
       const fileID = await fetch(`${process.env.REACT_APP_BASE_URL}/getAdID/${fileKey}`,{
@@ -127,7 +129,6 @@ const FileUpload = () => {
           method: "DELETE",
         });
       }
-      await fetch(`${process.env.REACT_APP_BASE_URL}/deleteAd/${fileKey}`, { method: "DELETE" });
       fetchFiles();
     } catch (error) {
       console.error("Error deleting file:", error);
