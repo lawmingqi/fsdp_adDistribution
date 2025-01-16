@@ -14,7 +14,7 @@ const AdvertisementDisplay = () => {
   const [isFullscreen, setIsFullscreen] = useState(false);
 
   useEffect(() => {
-    fetchAds();
+    fetchFiles();
 
     // Listen for the receive_message event to display the ad in real-time
     socket.on("receive_message", (data) => {
@@ -26,9 +26,9 @@ const AdvertisementDisplay = () => {
     };
   }, []);
 
-  const fetchAds = async () => {
+  const fetchFiles = async () => {
     try {
-      const response = await fetch("https://fsdp-addistribution.onrender.com/getAds");
+      const response = await fetch("https://fsdp-addistribution.onrender.com/api/files"); // Adjust to your backend URL
       const data = await response.json();
       setAds(data);
     } catch (error) {
