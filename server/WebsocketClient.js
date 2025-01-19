@@ -5,84 +5,62 @@ const ClientManager = require('./ClientManager');
 // Have to pass the instance of clientManaget from the websocket 
 const wsClient = new ClientManager();
 const WebSocket = require('ws');
-const allowedOrigin = ['http://localhost:3000/',
-    'localhost:5000', 
-    'https://fsdp-addistribution-frontend.onrender.com']
+const allowedOrigins = ['http://localhost:3000/',
+    'https://fsdp-addistribution-frontend.onrender.com'
+];
     
+const locations = {}
+
 // Adding clients to the websocket 
-const setupWebSocketServer = function(server) {
-    // fo not upgrade to the server automatically
+const setupWebSocketServer = (server) => {
     const wss = new WebSocket.Server({ noServer: true });
-    wss.on('error', (err) => {
-        console.log('WebSocket server error:', err);
-    });
-    
-    let allow  = false;
-    // Initialize the WebSocket server
-    try{
-        server.on('upgrade', (req, socket, head) => {
-            // Check the req 
-            console.log(req);
-            console.log('Upgrade request received');
-            // Check the request header for the websocket (Handle the upgrade process)
-            // Ensure all requests headers are for websocket connections
-            const headers = req.headers;
-            console.log(headers);
-            if (!req.headers.connection === "Upgrade" || req.headers.upgrade.toLowerCase() != 'websocket'){
-                console.log('Invalid request headers');
-                socket.write('HTTP/1.1 400 Bad Request\r\n\r\n');
-                socket.destroy();
-            }
-            for (const origin of allowedOrigin) {
-                if(headers.origin == origin) {
-                    console.log('Origin is allowed: ',headers.origin);
-                    wss.handleUpgrade(req, socket, head, (ws) => {
-                        wss.emit('connection', ws, req);
-                        onConnect(ws, req);
-                        allow = true
-                    });
-                }
-                
-            }
 
-            if (allow == false) {
-                console.log('Origin is not allowed');
-                socket.write('HTTP/1.1 403 Forbidden\r\n\r\n');
-                socket.destroy();
-            }
-            
-        });
-    }
-    catch(err){
-        console.log(err);
-    }
-    
-
-    // Add the message retrieved from the client to client list 
-};
-
-const closeConnection = function(wsClient, user_id) {
-    const ws = wsClient.getClient(user_id)
-    ws.close();
-}
-
-const onConnect = function(ws, req){
-    ws.on('message', (message) => {
-        const data = JSON.parse(message);
-        const user_id = data.user_id;
-        if(user_id == null) {
-            ws.close();
+    server.on('upgrade', (req, socket, head) => {
+        const origin = req.headers.origin;
+        if (!allowedOrigins.includes(origin)) {
+            socket.write('HTTP/1.1 403 Forbidden\r\n\r\n');
+            socket.destroy();
             return;
         }
-        else{
-            const data = {
-                "client_id" : user_id,
-                "ws" : ws
-            }
-            wsClient.saveClient(data);
-        }
+
+        wss.handleUpgrade(req, socket, head, (ws) => {
+            wss.emit('connection', ws, req);
+            onConnect(ws, req);
+        });
     });
-}
+
+    const onConnect = (ws, req) => {
+        ws.on('message', (message) => {
+            const data = JSON.parse(message);
+            if (data.type === 'register') {
+                // Register TV to a location
+                const { tvID, location } = data;
+                if (!locations[location]) {
+                    locations[location] = [];
+                }
+                if (!locations[location].includes(tvID)) {
+                    locations[location].push(tvID);
+                    wsClient.saveClient({ client_id: tvID, ws });
+                }
+            } else if (data.type === 'updateAd') {
+                // Update ad for specific TVs or all TVs in a location
+                const { location, tvIDs, adContent } = data;
+                const targetTVs = tvIDs || locations[location] || [];
+                targetTVs.forEach((tvID) => {
+                    const client = wsClient.getClient(tvID);
+                    if (client) {
+                        client.ws.send(JSON.stringify({ type: 'adUpdate', adContent }));
+                    }
+                });
+            }
+        });
+
+        ws.on('close', () => {
+            // Remove disconnected clients
+            wsClient.removeClient(ws);
+        });
+    };
+};
 
 const sendUsersConnected = function(tvList,ads){
     const wsList = wsClient.getClientList();

@@ -28,7 +28,9 @@ const AdvertisementDisplay = () => {
 
   const fetchFiles = async () => {
     try {
-      const response = await fetch("https://fsdp-addistribution.onrender.com/api/files"); // Adjust to your backend URL
+      const response = await fetch(
+        "https://fsdp-addistribution.onrender.com/api/files"
+      ); // Adjust to your backend URL
       const data = await response.json();
       setAds(data);
     } catch (error) {
@@ -72,11 +74,18 @@ const AdvertisementDisplay = () => {
     return (
       <div className="fullscreen-ad-container">
         {displayedAd.startsWith("http") ? (
-          <img src={displayedAd} alt="Fullscreen Ad" className="fullscreen-ad" />
+          <img
+            src={displayedAd}
+            alt="Fullscreen Ad"
+            className="fullscreen-ad"
+          />
         ) : (
           <p>Unsupported file type</p>
         )}
-        <button onClick={handleCloseFullscreen} className="close-fullscreen-btn">
+        <button
+          onClick={handleCloseFullscreen}
+          className="close-fullscreen-btn"
+        >
           Close Fullscreen
         </button>
       </div>
@@ -104,7 +113,11 @@ const AdvertisementDisplay = () => {
       {displayedAd && (
         <div className="displayed-ad-container">
           {displayedAd.startsWith("http") ? (
-            <img src={displayedAd} alt="Displayed Ad" className="displayed-ad" />
+            <img
+              src={displayedAd}
+              alt="Displayed Ad"
+              className="displayed-ad"
+            />
           ) : (
             <p>Unsupported file type</p>
           )}
@@ -119,7 +132,9 @@ const AdvertisementDisplay = () => {
         <div className="modal">
           <div className="modal-content">
             <h3>Select an Advertisement</h3>
-            <button onClick={() => setIsModalOpen(false)} className="close-btn">Close</button>
+            <button onClick={() => setIsModalOpen(false)} className="close-btn">
+              Close
+            </button>
             <div className="ads-list">
               {ads.map((ad) => (
                 <div
@@ -128,7 +143,11 @@ const AdvertisementDisplay = () => {
                   onClick={() => handleAdSelection(ad)}
                 >
                   {ad.FileType && ad.FileType.startsWith("image") ? (
-                    <img src={ad.FileUrl} alt={ad.FileName} className="ad-thumbnail" />
+                    <img
+                      src={ad.FileUrl}
+                      alt={ad.FileName}
+                      className="ad-thumbnail"
+                    />
                   ) : ad.FileType && ad.FileType.startsWith("video") ? (
                     <video src={ad.FileUrl} controls className="ad-thumbnail" />
                   ) : (
